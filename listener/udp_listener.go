@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Start(buf_size int, port string) {
+func Start(buf_size int, port string, c chan []byte) {
 	udpServer, err := net.ListenPacket("udp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatal(err)
@@ -19,6 +19,7 @@ func Start(buf_size int, port string) {
 		buf := make([]byte, 1024)
 		_, addr, err := udpServer.ReadFrom(buf)
 		fmt.Printf("Received %s from %s", strings.TrimSpace(string(buf)), addr)
+		c <- buf
 		if err != nil {
 			continue
 		}

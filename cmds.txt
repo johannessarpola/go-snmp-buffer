@@ -1,0 +1,3 @@
+CGO_CFLAGS="-I/vendored/rocksdb/include" \
+CGO_LDFLAGS="-L/vendored/rocksdb -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" \
+  go build
