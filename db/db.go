@@ -47,7 +47,7 @@ func (data *Data) Append(buf []byte) error {
 }
 
 func (data *Data) GetCurrentIndex() (uint64, error) {
-	var n uint64
+	var n uint64 = 0 // TODO Add a flag to notify if it is empty
 	err := data.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(data.current_idx_key)
 
@@ -56,6 +56,7 @@ func (data *Data) GetCurrentIndex() (uint64, error) {
 		}
 
 		item.Value(func(val []byte) error {
+			// TODO Panic here if the val is empty
 			n = u.ConvertToUint64(val)
 			return nil
 		})
@@ -80,15 +81,6 @@ func (data *Data) IncreaseCurrentIndex() (uint64, error) {
 }
 
 func (data *Data) Connect(c <-chan []byte) {
-
-	err := data.db.Update(func(txn *badger.Txn) error {
-		// TODO cleanup
-		return txn.Set(data.current_idx_key, u.ConvertToByteArr(uint64(0)))
-	})
-
-	if err != nil {
-		log.Fatalf("Apuva")
-	}
 
 	// Debug print
 	n, _ := data.GetCurrentIndex()
