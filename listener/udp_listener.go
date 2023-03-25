@@ -17,7 +17,7 @@ func Start(buf_size int, port string, c chan []byte) {
 	for {
 		buf := make([]byte, 2048)
 		_, addr, err := udpServer.ReadFrom(buf)
-		fmt.Printf("Received from %s", addr)
+		fmt.Printf("\nReceived from %s", addr)
 		c <- buf
 		if err != nil {
 			continue

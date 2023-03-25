@@ -1,8 +1,8 @@
 package db
 
 import (
+	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/dgraph-io/badger/v3"
 	u "github.com/johannessarpola/go-network-buffer/utils"
@@ -34,45 +34,56 @@ func NewData(path string) *Data {
 
 func (data *Data) Append(buf []byte) error {
 	return data.db.Update(func(txn *badger.Txn) error {
-		item, _ := txn.Get(data.current_idx_key)
-		value := make([]byte, item.ValueSize())
-		item.ValueCopy(value)
+		cur_idx, _ := data.IncreaseCurrentIndex()
+		arr := u.ConvertToByteArr(cur_idx)
 
-		lastInt, _ := strconv.Atoi(string(value))
-		lastInt++
-		txn.Set(data.current_idx_key, []byte(strconv.Itoa(lastInt)))
-		txn.Set(last_val, v)
+		// Update the stored idx
+		txn.Set(data.current_idx_key, arr)
+
+		// Add the value
+		txn.Set(arr, buf)
 		return nil
 	})
 }
 
-func (data *Data) IncreaseCurrentIndex() {
-	data.db.Update(func(txn *badger.Txn) error {
-		v, err := txn.Get(db.current_idx_key)
+func (data *Data) GetCurrentIndex() (uint64, error) {
+	var n uint64
+	err := data.db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get(data.current_idx_key)
 
 		if err != nil {
 			log.Fatal("No current idx in database ")
 		}
 
-		err = v.Value(func(val []byte) error {
-			n := u.ConvertToUint64(val)
-			n++
-
-			return txn.Set(data.current_idx_key, u.ConvertToByteArr(n))
+		item.Value(func(val []byte) error {
+			n = u.ConvertToUint64(val)
+			return nil
 		})
-
-		if err != nil {
-			log.Fatal("Could not update current idx value in database")
-		}
+		return err
 
 	})
+	return n, err
 }
 
-func (data *Data) Start(c <-chan []byte) {
-
-	last_val := []byte(strconv.Itoa(0))
+func (data *Data) IncreaseCurrentIndex() (uint64, error) {
+	var r uint64
 	err := data.db.Update(func(txn *badger.Txn) error {
-		return txn.Set(data.current_idx_key, last_val)
+		n, err := data.GetCurrentIndex()
+		r = n + 1
+		if err != nil {
+			log.Fatal("No current idx in database ")
+		}
+
+		return txn.Set(data.current_idx_key, u.ConvertToByteArr(r))
+	})
+	return r, err
+}
+
+func (data *Data) Connect(c <-chan []byte) {
+
+	err := data.db.Update(func(txn *badger.Txn) error {
+		// TODO cleanup
+		return txn.Set(data.current_idx_key, u.ConvertToByteArr(uint64(0)))
 	})
 
 	if err != nil {
@@ -80,41 +91,16 @@ func (data *Data) Start(c <-chan []byte) {
 	}
 
 	// Debug print
-	data.db.View(func(txn *badger.Txn) error {
-		item, _ := txn.Get(data.current_idx_key)
-		value := make([]byte, item.ValueSize())
-		item.ValueCopy(value)
-		last_val, _ := strconv.Atoi(string(value))
-		println(last_val)
-		return nil
-	})
+	n, _ := data.GetCurrentIndex()
+	fmt.Printf("\n%d", n)
 
 	for v := range c {
 		// TODO Needs lots of cleaning up
-		_ = data.db.Update(func(txn *badger.Txn) error {
-			item, _ := txn.Get(data.current_idx_key)
-			value := make([]byte, item.ValueSize())
-			item.ValueCopy(value)
-
-			lastInt, _ := strconv.Atoi(string(value))
-			lastInt++
-			println(lastInt)
-			txn.Set(data.current_idx_key, []byte(strconv.Itoa(lastInt)))
-			txn.Set(last_val, v)
-			return nil
-		})
+		data.Append(v)
 
 		// Debug print
-		data.db.View(func(txn *badger.Txn) error {
-			item, _ := txn.Get(data.current_idx_key)
-			value := make([]byte, item.ValueSize())
-			item.ValueCopy(value)
-			last_val, _ := strconv.Atoi(string(value))
-			println(last_val)
-			return nil
-		})
-
-		println("Recvd %s", string(v))
+		n, _ := data.GetCurrentIndex()
+		fmt.Printf("\n%d", n)
 	}
 
 	defer data.db.Close()

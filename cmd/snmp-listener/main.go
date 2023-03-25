@@ -12,7 +12,7 @@ func main() {
 	go listener.Start(1024, "9999", c)
 
 	data := db.NewData("../../_tmp")
-	go data.Start(c)
+	go data.Connect(c)
 
 	for {
 		time.Sleep(1 * time.Second) // TODO Remove
