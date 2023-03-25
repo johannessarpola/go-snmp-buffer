@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strings"
 	"time"
 )
 
@@ -16,9 +15,9 @@ func Start(buf_size int, port string, c chan []byte) {
 	defer udpServer.Close()
 
 	for {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 2048)
 		_, addr, err := udpServer.ReadFrom(buf)
-		fmt.Printf("Received %s from %s", strings.TrimSpace(string(buf)), addr)
+		fmt.Printf("Received from %s", addr)
 		c <- buf
 		if err != nil {
 			continue
@@ -30,6 +29,6 @@ func Start(buf_size int, port string, c chan []byte) {
 
 func response(udpServer net.PacketConn, addr net.Addr, buf []byte) {
 	time := time.Now().Format(time.ANSIC)
-	responseStr := fmt.Sprintf("time received: %v. Your message: %v!", time, string(buf))
+	responseStr := fmt.Sprintf("time received: %v", time)
 	udpServer.WriteTo([]byte(responseStr), addr)
 }
