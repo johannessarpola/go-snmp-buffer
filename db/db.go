@@ -12,9 +12,10 @@ type Data struct {
 	db              *badger.DB
 	current_idx_key []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
 	offset_idx_key  []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
+	prefix          []byte
 }
 
-func NewData(path string) *Data {
+func NewData(path string, prefix string) *Data {
 	opts := badger.DefaultOptions(path)
 	db, err := badger.Open(opts)
 	if err != nil {
@@ -28,22 +29,26 @@ func NewData(path string) *Data {
 		db:              db,
 		current_idx_key: current_idx_key, //
 		offset_idx_key:  offset_idx_key,
+		prefix:          []byte(prefix),
 	}
 
 }
 
-func (data *Data) Append(buf []byte) error {
+func (data *Data) Append(input []byte) error {
 	return data.db.Update(func(txn *badger.Txn) error {
 		cur_idx, _ := data.IncreaseCurrentIndex()
-		arr := u.ConvertToByteArr(cur_idx)
-
+		key := u.ConvertToByteArr(cur_idx)
 		// Update the stored idx
-		txn.Set(data.current_idx_key, arr)
+		txn.Set(data.current_idx_key, key)
 
 		// Add the value
-		txn.Set(arr, buf)
+		txn.Set(data.prefixed_current_idx(key), input)
 		return nil
 	})
+}
+
+func (data *Data) prefixed_current_idx(key []byte) []byte {
+	return append(data.prefix, key...)
 }
 
 func (data *Data) GetCurrentIndex() (uint64, error) {
@@ -51,16 +56,18 @@ func (data *Data) GetCurrentIndex() (uint64, error) {
 	err := data.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(data.current_idx_key)
 
-		if err != nil {
-			log.Fatal("No current idx in database ")
+		if err == nil {
+			item.Value(func(val []byte) error {
+				println("Value exists, setting cur_idx from db")
+				n = u.ConvertToUint64(val)
+				return nil
+			})
+		} else {
+			println("Value does not exist, setting cur_idx to 0")
+			txn.Set(data.current_idx_key, u.ConvertToByteArr(n))
 		}
 
-		item.Value(func(val []byte) error {
-			// TODO Panic here if the val is empty
-			n = u.ConvertToUint64(val)
-			return nil
-		})
-		return err
+		return nil // TODO Fix
 
 	})
 	return n, err
