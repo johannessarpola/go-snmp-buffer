@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
 type Data struct {
-	db              *badger.DB
+	DB              *badger.DB
 	current_idx_key []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
 	offset_idx_key  []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
 	prefix          []byte
@@ -26,7 +26,7 @@ func NewData(path string, prefix string) *Data {
 	offset_idx_key := []byte("offset_idx")
 
 	return &Data{
-		db:              db,
+		DB:              db,
 		current_idx_key: current_idx_key, //
 		offset_idx_key:  offset_idx_key,
 		prefix:          []byte(prefix),
@@ -35,14 +35,11 @@ func NewData(path string, prefix string) *Data {
 }
 
 func (data *Data) Append(input []byte) error {
-	return data.db.Update(func(txn *badger.Txn) error {
+	return data.DB.Update(func(txn *badger.Txn) error {
 		cur_idx, _ := data.IncreaseCurrentIndex()
-		key := u.ConvertToByteArr(cur_idx)
-		// Update the stored idx
-		txn.Set(data.current_idx_key, key)
-
+		idx_key := u.ConvertToByteArr(cur_idx)
 		// Add the value
-		txn.Set(data.prefixed_current_idx(key), input)
+		txn.Set(data.prefixed_current_idx(idx_key), input)
 		return nil
 	})
 }
@@ -53,7 +50,7 @@ func (data *Data) prefixed_current_idx(key []byte) []byte {
 
 func (data *Data) GetCurrentIndex() (uint64, error) {
 	var n uint64 = 0 // TODO Add a flag to notify if it is empty
-	err := data.db.View(func(txn *badger.Txn) error {
+	err := data.DB.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(data.current_idx_key)
 
 		if err == nil {
@@ -75,7 +72,7 @@ func (data *Data) GetCurrentIndex() (uint64, error) {
 
 func (data *Data) IncreaseCurrentIndex() (uint64, error) {
 	var r uint64
-	err := data.db.Update(func(txn *badger.Txn) error {
+	err := data.DB.Update(func(txn *badger.Txn) error {
 		n, err := data.GetCurrentIndex()
 		r = n + 1
 		if err != nil {
@@ -102,5 +99,5 @@ func (data *Data) Connect(c <-chan []byte) {
 		fmt.Printf("\n%d", n)
 	}
 
-	defer data.db.Close()
+	defer data.DB.Close()
 }
