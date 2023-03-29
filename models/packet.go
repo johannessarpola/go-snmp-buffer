@@ -2,6 +2,17 @@ package models
 
 import g "github.com/gosnmp/gosnmp"
 
+type Variable interface {
+	Value() interface{}
+	Name() string
+	Type() g.Asn1BER
+}
+
+type PacketSubset interface {
+	Community() string
+	Variables() []Variable
+}
+
 type Packet struct {
 	Version            g.SnmpVersion
 	MsgFlags           g.SnmpV3MsgFlags

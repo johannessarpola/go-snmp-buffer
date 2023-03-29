@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"log"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/ristretto/z"
 	db "github.com/johannessarpola/go-network-buffer/db"
-	"github.com/johannessarpola/go-network-buffer/models"
+	"github.com/johannessarpola/go-network-buffer/snmp"
 	"github.com/johannessarpola/go-network-buffer/utils"
 )
 
@@ -49,10 +47,7 @@ func main() {
 			fmt.Printf("key: %d\n", k)
 			v := kv.Value
 
-			var p models.Packet
-			buf := bytes.NewBuffer(v)
-			decoder := gob.NewDecoder(buf)
-			err := decoder.Decode(&p)
+			p, err := snmp.Decode(v)
 			if err != nil {
 				log.Println("could not decode!!")
 			}

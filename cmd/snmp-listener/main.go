@@ -9,7 +9,7 @@ import (
 
 func main() {
 	c := make(chan []byte)
-	go listener.Start(1024, "9999", c)
+	go listener.Start("9999", c)
 
 	data := db.NewData("../../_tmp", "snmp_")
 	go data.Connect(c)

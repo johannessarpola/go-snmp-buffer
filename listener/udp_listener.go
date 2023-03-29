@@ -1,8 +1,6 @@
 package listener
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"log"
 	"net"
@@ -10,21 +8,22 @@ import (
 
 	g "github.com/gosnmp/gosnmp"
 	"github.com/johannessarpola/go-network-buffer/models"
+	"github.com/johannessarpola/go-network-buffer/snmp"
 )
 
-func Start(buf_size int, port string, c chan []byte) {
-	var buf bytes.Buffer // Stand-in for a network connection
-	enc := gob.NewEncoder(&buf)
-
+func Start(port string, out chan<- []byte) {
 	tl := g.NewTrapListener()
 	tl.OnNewTrap = func(s *g.SnmpPacket, u *net.UDPAddr) {
 
 		log.Printf("got trapdata from %s\n", u.IP)
-		err := enc.Encode(models.NewPacket(s))
+		p := models.NewPacket(s)
+		b, err := snmp.Encode(&p)
+
 		if err != nil {
 			println("Encoding failed!!")
+		} else {
+			out <- b // arr is copied to channel
 		}
-		c <- buf.Bytes() // arr is copied to channel
 
 	}
 	tl.Params = g.Default
