@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/ristretto/z"
+	g "github.com/gosnmp/gosnmp"
 	db "github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/snmp"
 	"github.com/johannessarpola/go-network-buffer/utils"
@@ -52,8 +54,24 @@ func main() {
 				log.Println("could not decode!!")
 			}
 			println(p.Community)
-			for _, v := range p.Variables {
-				println(fmt.Sprintf("%s,%s,%s", v.Name, v.Type.String(), v.Value))
+			// TODO Clean up at some point, just for debug for now
+			for i, variable := range p.Variables {
+				fmt.Printf("%d: oid: %s ", i, variable.Name)
+
+				switch variable.Type {
+				case g.OctetString:
+					bytes := variable.Value.([]byte)
+					fmt.Printf("string: %s\n", string(bytes))
+				case g.TimeTicks:
+					n := g.ToBigInt(variable.Value)
+					tm := time.Unix(n.Int64(), 0)
+					fmt.Printf("time: %s\n", tm.String())
+				default:
+					// ... or often you're just interested in numeric values.
+					// ToBigInt() will return the Value as a BigInt, for plugging
+					// into your calculations.
+					fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
+				}
 			}
 
 		}
