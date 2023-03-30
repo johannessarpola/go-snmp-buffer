@@ -7,5 +7,10 @@
 - Producer needs some variation in the output
 - Listener should be constantly running and listening with a cmd
 - Forwarder can be started every with set times like every 10 seconds
-    - Forwarder should know on what index it is or either remove
+    - Forwarder should know on what index it is or either remove sent records
 - Persistence should expire records after a set while (e.g. 7 days)
+
+
+# Minor things to do
+
+- Replace prints with different level (https://www.honeybadger.io/blog/golang-logging/)

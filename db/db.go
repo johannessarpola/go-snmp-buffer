@@ -5,14 +5,15 @@ import (
 	"log"
 
 	"github.com/dgraph-io/badger/v4"
+	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
 type Data struct {
-	DB              *badger.DB
-	current_idx_key []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
-	offset_idx_key  []byte // BigEndian, uint64 // TODO Should use sequences from badgerdb?
-	prefix          []byte
+	DB          *badger.DB
+	current_idx m.Index
+	offset_idx  m.Index
+	prefix      []byte
 }
 
 func NewData(path string, prefix string) *Data {
@@ -22,24 +23,55 @@ func NewData(path string, prefix string) *Data {
 		log.Fatal("Could not open filestore")
 	}
 
-	current_idx_key := []byte("current_idx")
-	offset_idx_key := []byte("offset_idx")
+	current_idx := m.ZeroIndex("current_idx")
+	offset_idx := m.ZeroIndex("offset_idx")
 
-	return &Data{
-		DB:              db,
-		current_idx_key: current_idx_key, //
-		offset_idx_key:  offset_idx_key,
-		prefix:          []byte(prefix),
+	d := &Data{
+		DB:          db,
+		current_idx: current_idx,
+		offset_idx:  offset_idx,
+		prefix:      []byte(prefix),
 	}
 
+	d.init_index(&d.current_idx)
+	d.init_index(&d.offset_idx)
+
+	return d
+
+}
+
+func (data *Data) init_index(idx *m.Index) {
+	err := data.DB.Update(func(txn *badger.Txn) error {
+		item, err := txn.Get(idx.KeyAsBytes())
+
+		if err == nil {
+			item.Value(func(val []byte) error {
+				n := u.ConvertToUint64(val)
+				fmt.Printf("Value exists, setting %s from db to %d\n", idx.Name, n)
+				idx.SetValue(n)
+				return nil
+			})
+		} else {
+			fmt.Printf("Value does not exist, setting %s to 0\n", idx.Name)
+		}
+
+		err = txn.Set(idx.AsBytes())
+		return err
+
+	})
+
+	if err != nil {
+		log.Fatalf("Could not initialize index %s", idx.Name)
+	}
 }
 
 func (data *Data) Append(input []byte) error {
 	return data.DB.Update(func(txn *badger.Txn) error {
-		cur_idx, _ := data.IncreaseCurrentIndex()
-		idx_key := u.ConvertToByteArr(cur_idx)
-		// Add the value
-		txn.Set(data.prefixed_current_idx(idx_key), input)
+		_, err := data.IncreaseCurrentIndex()
+		if err != nil {
+			println("Could not increase current index")
+		}
+		txn.Set(data.prefixed_current_idx(data.current_idx.KeyAsBytes()), input)
 		return nil
 	})
 }
@@ -48,56 +80,57 @@ func (data *Data) prefixed_current_idx(key []byte) []byte {
 	return append(data.prefix, key...)
 }
 
-func (data *Data) GetCurrentIndex() (uint64, error) {
-	var n uint64 = 0 // TODO Add a flag to notify if it is empty
-	err := data.DB.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(data.current_idx_key)
-
-		if err == nil {
-			item.Value(func(val []byte) error {
-				println("Value exists, setting cur_idx from db")
-				n = u.ConvertToUint64(val)
-				return nil
-			})
-		} else {
-			println("Value does not exist, setting cur_idx to 0")
-			txn.Set(data.current_idx_key, u.ConvertToByteArr(n))
-		}
-
-		return nil // TODO Fix
-
-	})
-	return n, err
+func (data *Data) GetCurrentIndex() uint64 {
+	return data.current_idx.Value
 }
 
 func (data *Data) IncreaseCurrentIndex() (uint64, error) {
-	var r uint64
 	err := data.DB.Update(func(txn *badger.Txn) error {
-		n, err := data.GetCurrentIndex()
-		r = n + 1
-		if err != nil {
-			log.Fatal("No current idx in database ")
-		}
-
-		return txn.Set(data.current_idx_key, u.ConvertToByteArr(r))
+		data.current_idx.Increment()
+		return txn.Set(data.current_idx.AsBytes())
 	})
-	return r, err
+	return data.current_idx.Value, err
 }
 
 func (data *Data) Connect(c <-chan []byte) {
 
 	// Debug print
-	n, _ := data.GetCurrentIndex()
+	n := data.GetCurrentIndex()
 	fmt.Printf("\n%d", n)
 
 	for v := range c {
-		// TODO Needs lots of cleaning up
 		data.Append(v)
 
 		// Debug print
-		n, _ := data.GetCurrentIndex()
+		n := data.GetCurrentIndex()
 		fmt.Printf("\n%d", n)
 	}
 
 	defer data.DB.Close()
+}
+
+func (data *Data) SaveIndex(idx m.Index) error {
+	err := data.DB.Update(func(txn *badger.Txn) error {
+		return txn.Set(idx.KeyAsBytes(), u.ConvertToByteArr(idx.Value))
+	})
+	return err
+
+}
+
+func (data *Data) GetIndex(index_name string) (m.Index, error) {
+	idx := m.ZeroIndex(index_name)
+	err := data.DB.View(func(txn *badger.Txn) error {
+		item, err := txn.Get(idx.KeyAsBytes())
+
+		if err != nil {
+			println("Index not found")
+			return err
+		}
+		return item.Value(func(val []byte) error {
+			idx.SetValue(u.ConvertToUint64(val))
+			return nil
+		})
+	})
+
+	return idx, err
 }

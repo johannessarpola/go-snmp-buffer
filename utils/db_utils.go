@@ -3,6 +3,7 @@ package utils
 import "encoding/binary"
 
 func ConvertToUint64(buf []byte) uint64 {
+	// TODO Add some handling for invalid format
 	return binary.BigEndian.Uint64(buf)
 }
 
