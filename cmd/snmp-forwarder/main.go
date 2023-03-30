@@ -32,7 +32,6 @@ func main() {
 	// }
 
 	// Send is called serially, while Stream.Orchestrate is running.
-	// stream.Send = c.Send // TODO Fix at some point
 	stream.Send = func(buf *z.Buffer) error {
 		list, err := badger.BufferToKVList(buf)
 		if err != nil {

@@ -37,7 +37,7 @@ func (idx *Index) ValueAsBytes() []byte {
 }
 
 func (idx *Index) WithValue(value uint64) *Index {
-	idx.Value = value
+	idx.WithExists(true).Value = value
 	return idx
 }
 
@@ -47,7 +47,7 @@ func (idx *Index) WithExists(exists bool) *Index {
 }
 
 func (idx *Index) SetValue(value uint64) *Index {
-	return idx.WithValue(value).WithExists(true)
+	return idx.WithExists(true).WithValue(value)
 }
 
 func (idx *Index) Increment() *Index {
