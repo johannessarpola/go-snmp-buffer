@@ -1,13 +1,13 @@
 package db
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
+	"github.com/sirupsen/logrus"
 )
+
+var logger = logrus.New()
 
 type Data struct {
 	DB          *badger.DB
@@ -20,7 +20,7 @@ func NewData(path string, prefix string) *Data {
 	opts := badger.DefaultOptions(path)
 	db, err := badger.Open(opts)
 	if err != nil {
-		log.Fatal("Could not open filestore")
+		logger.Fatal("Could not open filestore")
 	}
 
 	current_idx := m.ZeroIndex("current_idx")
@@ -47,12 +47,12 @@ func (data *Data) init_index(idx *m.Index) {
 		if err == nil {
 			item.Value(func(val []byte) error {
 				n := u.ConvertToUint64(val)
-				fmt.Printf("Value exists, setting %s from db to %d\n", idx.Name, n)
+				logger.Infof("Value exists, setting %s from db to %d", idx.Name, n)
 				idx.SetValue(n)
 				return nil
 			})
 		} else {
-			fmt.Printf("Value does not exist, setting %s to 0\n", idx.Name)
+			logger.Infof("Value does not exist, setting %s to 0", idx.Name)
 		}
 
 		err = txn.Set(idx.AsBytes())
@@ -61,7 +61,7 @@ func (data *Data) init_index(idx *m.Index) {
 	})
 
 	if err != nil {
-		log.Fatalf("Could not initialize index %s", idx.Name)
+		logger.Fatalf("Could not initialize index %s", idx.Name)
 	}
 }
 
@@ -69,7 +69,7 @@ func (data *Data) Append(input []byte) error {
 	return data.DB.Update(func(txn *badger.Txn) error {
 		_, err := data.IncreaseCurrentIndex()
 		if err != nil {
-			println("Could not increase current index")
+			logger.Info("Could not increase current index")
 		}
 		txn.Set(data.prefixed_current_idx(data.current_idx.KeyAsBytes()), input)
 		return nil
@@ -96,14 +96,14 @@ func (data *Data) Connect(c <-chan []byte) {
 
 	// Debug print
 	n := data.GetCurrentIndex()
-	fmt.Printf("\n%d", n)
+	logger.Info("\n%d", n)
 
 	for v := range c {
 		data.Append(v)
 
 		// Debug print
 		n := data.GetCurrentIndex()
-		fmt.Printf("\n%d", n)
+		logger.Info("\n%d", n)
 	}
 
 	defer data.DB.Close()
@@ -111,19 +111,19 @@ func (data *Data) Connect(c <-chan []byte) {
 
 func (data *Data) SaveIndex(idx m.Index) error {
 	err := data.DB.Update(func(txn *badger.Txn) error {
-		return txn.Set(idx.KeyAsBytes(), u.ConvertToByteArr(idx.Value))
+		return txn.Set(idx.AsBytes())
 	})
 	return err
 
 }
 
 func (data *Data) GetIndex(index_name string) (m.Index, error) {
-	idx := m.ZeroIndex(index_name)
+	idx := m.ZeroIndex(index_name) // Have initial struct
 	err := data.DB.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(idx.KeyAsBytes())
 
 		if err != nil {
-			println("Index not found")
+			logger.Info("Index not found")
 			return err
 		}
 		return item.Value(func(val []byte) error {

@@ -3,6 +3,7 @@ module github.com/johannessarpola/go-network-buffer
 go 1.19
 
 require (
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 )
