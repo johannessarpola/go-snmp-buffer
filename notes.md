@@ -12,5 +12,3 @@
 
 
 # Minor things to do
-
-- Replace prints with different level (https://www.honeybadger.io/blog/golang-logging/)
