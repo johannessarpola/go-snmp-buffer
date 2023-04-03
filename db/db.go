@@ -71,7 +71,7 @@ func (data *Data) Append(input []byte) error {
 		if err != nil {
 			logger.Info("Could not increase current index")
 		}
-		txn.Set(data.prefixed_current_idx(data.current_idx.KeyAsBytes()), input)
+		txn.Set(data.prefixed_current_idx(data.current_idx.ValueAsBytes()), input)
 		return nil
 	})
 }
@@ -82,6 +82,10 @@ func (data *Data) prefixed_current_idx(key []byte) []byte {
 
 func (data *Data) GetCurrentIndex() uint64 {
 	return data.current_idx.Value
+}
+
+func (data *Data) GetOffsetIndex() uint64 {
+	return data.offset_idx.Value
 }
 
 func (data *Data) IncreaseCurrentIndex() (uint64, error) {
@@ -96,7 +100,7 @@ func (data *Data) Connect(c <-chan []byte) {
 
 	// Debug print
 	n := data.GetCurrentIndex()
-	logger.Info("\n%d", n)
+	logger.Infof("\n%d", n)
 
 	for v := range c {
 		data.Append(v)
@@ -107,6 +111,24 @@ func (data *Data) Connect(c <-chan []byte) {
 	}
 
 	defer data.DB.Close()
+}
+
+// Can be used to move offset forward, save(bool) to control if it is persisted also
+func (data *Data) IncrementGetOffset(save bool) (*m.Index, error) {
+	data.offset_idx.Increment()
+	if save {
+		data.UpdateOffset(data.current_idx.Value + 1)
+	}
+	return &data.offset_idx, nil
+}
+
+func (data *Data) UpdateOffset(new_val uint64) error {
+	data.offset_idx.SetValue(new_val)
+	err := data.SaveIndex(data.offset_idx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (data *Data) SaveIndex(idx m.Index) error {

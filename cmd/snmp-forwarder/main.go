@@ -11,8 +11,11 @@ import (
 	g "github.com/gosnmp/gosnmp"
 	db "github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/snmp"
-	"github.com/johannessarpola/go-network-buffer/utils"
+	u "github.com/johannessarpola/go-network-buffer/utils"
+	"github.com/sirupsen/logrus"
 )
+
+var logger = logrus.New()
 
 func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
@@ -27,9 +30,11 @@ func main() {
 
 	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
 	// TODO Filtering does not seem to be working for now
-	// stream.ChooseKey = func(item *badger.Item) bool {
-	// 	return bytes.HasSuffix(item.Key(), []byte("snmp_"))
-	// }
+	stream.ChooseKey = func(item *badger.Item) bool {
+		k := item.Key()[len(stream.Prefix):]
+		n := u.ConvertToUint64(k)
+		return n >= data.GetOffsetIndex()
+	}
 
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(buf *z.Buffer) error {
@@ -37,16 +42,20 @@ func main() {
 		if err != nil {
 			return err
 		}
+
+		var last_k uint64 = 0
 		for _, kv := range list.Kv {
-			if kv.StreamDone == true {
+			if kv.StreamDone {
+				logger.Info("Stream's done!")
 				return nil
 			}
 
 			// TODO Clean up at some point
-			prefix := []byte("snmp_")                        // TODO Ugly as f
-			k := utils.ConvertToUint64(kv.Key[len(prefix):]) // TODO Ugly as f
+			prefix := []byte("snmp_")                    // TODO Ugly as f
+			k := u.ConvertToUint64(kv.Key[len(prefix):]) // TODO Ugly as f
 			fmt.Printf("key: %d\n", k)
 			v := kv.Value
+			last_k = k
 
 			p, err := snmp.Decode(v)
 			if err != nil {
@@ -74,6 +83,7 @@ func main() {
 			}
 
 		}
+		data.UpdateOffset(last_k)
 		return nil // TODO Needs some handling
 	}
 
