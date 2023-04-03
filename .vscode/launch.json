@@ -24,6 +24,13 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/snmp-forwarder/main.go"
+        },
+        {
+            "name": "Launch Debugger",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/debug/main.go"
         }
     ]
 }
