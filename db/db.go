@@ -117,7 +117,7 @@ func (data *Data) Connect(c <-chan []byte) {
 func (data *Data) IncrementGetOffset(save bool) (*m.Index, error) {
 	data.offset_idx.Increment()
 	if save {
-		data.UpdateOffset(data.current_idx.Value + 1)
+		data.UpdateOffset(data.current_idx.Value)
 	}
 	return &data.offset_idx, nil
 }
