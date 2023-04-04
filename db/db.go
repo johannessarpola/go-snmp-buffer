@@ -9,6 +9,7 @@ import (
 
 var logger = logrus.New()
 
+// TODO Hand multiple offsets?
 type Data struct {
 	DB          *badger.DB
 	current_idx m.Index
@@ -16,6 +17,7 @@ type Data struct {
 	prefix      []byte
 }
 
+// TODO Add batch support so it is offset + n
 func (data *Data) GetOffsettedStream(goroutines int, id string) *badger.Stream {
 	stream := data.DB.NewStream()
 
