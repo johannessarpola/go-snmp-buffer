@@ -44,7 +44,7 @@ func main() {
 			v := kv.Value
 			last_k = k
 
-			p, err := snmp.Decode(v)
+			p, err := serdes.Decode(v)
 			if err != nil {
 				log.Println("could not decode!!")
 			}
