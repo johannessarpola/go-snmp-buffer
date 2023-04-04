@@ -21,11 +21,7 @@ func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
 
 	data := db.NewData("../../_tmp", "snmp_") // Will cause conflict probably if run with listener
-	stream := data.GetStream(8, "snmp.Forwarder")
-
-	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
-	// TODO Filtering does not seem to be working for now
-	stream.ChooseKey = data.AfterOffsetChooseKey
+	stream := data.GetOffsettedStream(8, "snmp.Forwarder")
 
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(buf *z.Buffer) error {

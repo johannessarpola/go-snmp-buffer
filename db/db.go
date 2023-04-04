@@ -16,7 +16,7 @@ type Data struct {
 	prefix      []byte
 }
 
-func (data *Data) GetStream(goroutines int, id string) *badger.Stream {
+func (data *Data) GetOffsettedStream(goroutines int, id string) *badger.Stream {
 	stream := data.DB.NewStream()
 
 	// -- Optional settings
@@ -24,10 +24,13 @@ func (data *Data) GetStream(goroutines int, id string) *badger.Stream {
 	stream.Prefix = data.prefix
 	stream.LogPrefix = id
 
+	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
+	stream.ChooseKey = data.after_offset_choosekey
+
 	return stream
 }
 
-func (data *Data) AfterOffsetChooseKey(item *badger.Item) bool {
+func (data *Data) after_offset_choosekey(item *badger.Item) bool {
 	k := item.Key()[len(data.prefix):]
 	n := u.ConvertToUint64(k)
 	return n > data.GetOffsetIndex()
