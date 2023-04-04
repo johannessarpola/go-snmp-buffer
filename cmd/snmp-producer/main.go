@@ -32,8 +32,11 @@ func main() {
 		Variables: []g.SnmpPDU{pdu},
 	}
 
-	_, err = g.Default.SendTrap(trap)
-	if err != nil {
-		log.Fatalf("SendTrap() err: %v", err)
+	for j := 0; j <= 10000; j++ {
+		_, err = g.Default.SendTrap(trap)
+		if err != nil {
+			log.Fatalf("SendTrap() err: %v", err)
+		}
 	}
+
 }

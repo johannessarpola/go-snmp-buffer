@@ -33,8 +33,7 @@ func main() {
 		var last_k uint64 = 0
 		for _, kv := range list.Kv {
 			if kv.StreamDone {
-				logger.Info("Stream's done!")
-				return nil
+				logger.Info("Batch done!")
 			}
 
 			// TODO Clean up at some point
