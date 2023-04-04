@@ -21,20 +21,11 @@ func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
 
 	data := db.NewData("../../_tmp", "snmp_") // Will cause conflict probably if run with listener
-	stream := data.DB.NewStream()
-
-	// -- Optional settings
-	stream.NumGo = 8                    // Set number of goroutines to use for iteration.
-	stream.Prefix = []byte("snmp_")     // Leave nil for iteration over the whole DB.
-	stream.LogPrefix = "snmp.Streaming" // For identifying stream logs. Outputs to Logger.
+	stream := data.GetStream(8, "snmp.Forwarder")
 
 	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
 	// TODO Filtering does not seem to be working for now
-	stream.ChooseKey = func(item *badger.Item) bool {
-		k := item.Key()[len(stream.Prefix):]
-		n := u.ConvertToUint64(k)
-		return n >= data.GetOffsetIndex()
-	}
+	stream.ChooseKey = data.AfterOffsetChooseKey
 
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(buf *z.Buffer) error {

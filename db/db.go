@@ -16,6 +16,23 @@ type Data struct {
 	prefix      []byte
 }
 
+func (data *Data) GetStream(goroutines int, id string) *badger.Stream {
+	stream := data.DB.NewStream()
+
+	// -- Optional settings
+	stream.NumGo = goroutines // Set number of goroutines to use for iteration.
+	stream.Prefix = data.prefix
+	stream.LogPrefix = id
+
+	return stream
+}
+
+func (data *Data) AfterOffsetChooseKey(item *badger.Item) bool {
+	k := item.Key()[len(data.prefix):]
+	n := u.ConvertToUint64(k)
+	return n > data.GetOffsetIndex()
+}
+
 func NewData(path string, prefix string) *Data {
 	opts := badger.DefaultOptions(path)
 	db, err := badger.Open(opts)
