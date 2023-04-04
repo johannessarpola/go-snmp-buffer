@@ -10,7 +10,7 @@ import (
 	"github.com/dgraph-io/ristretto/z"
 	g "github.com/gosnmp/gosnmp"
 	db "github.com/johannessarpola/go-network-buffer/db"
-	"github.com/johannessarpola/go-network-buffer/snmp"
+	"github.com/johannessarpola/go-network-buffer/serdes"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
