@@ -1,42 +1,79 @@
 package listener
 
 import (
-	"fmt"
-	"log"
 	"net"
-	"os"
 
 	g "github.com/gosnmp/gosnmp"
 	"github.com/johannessarpola/go-network-buffer/models"
-	"github.com/johannessarpola/go-network-buffer/snmp"
+	"github.com/johannessarpola/go-network-buffer/serdes"
+	"github.com/panjf2000/ants/v2"
 	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.New()
 
-func Start(port string, out chan<- []byte) {
-	tl := g.NewTrapListener()
-	tl.OnNewTrap = func(s *g.SnmpPacket, u *net.UDPAddr) {
+type SnmpHandler struct {
+	// TODO Add support for v3 at some point
+	gosnmp *g.GoSNMP
+	out    chan<- []byte // TODO add some serious tool for this
+}
 
-		logger.Infof("got trapdata from %s\n", u.IP)
-		p := models.NewPacket(s)
-		b, err := snmp.Encode(&p)
-
-		if err != nil {
-			logger.Info("Encoding failed!!")
-		} else {
-			out <- b // arr is copied to channel
-		}
-
-	}
-	tl.Params = g.Default
-	tl.Params.Logger = g.NewLogger(log.New(os.Stdout, "", 0)) // TODO use logrus
-	err := tl.Listen(fmt.Sprintf("0.0.0.0:%s", port))
-
+func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {
+	trap, err := snmp.gosnmp.UnmarshalTrap(pckt, false) // only supports v2 now
+	p := models.NewPacket(trap)
+	b, err := serdes.Encode(&p)
 	if err != nil {
-		logger.Fatal("Could not start listener")
+		logger.Info("Encoding failed!!")
+		return err
+	} else {
+		// TODO Add some actual lib instead of chan
+		snmp.out <- b // arr is copied to channel
+	}
+	return nil
+}
+
+func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- []byte) *SnmpHandler {
+	h := &SnmpHandler{
+		gosnmp: gosnmp,
+		out:    out,
+	}
+	return h
+}
+
+func Start(port int, out chan<- []byte) {
+	// TODO Cleanup
+	defer ants.Release()
+	ants, err := ants.NewPool(100)
+	if err != nil {
+		panic(err)
 	}
 
-	defer tl.Close()
+	addr := net.UDPAddr{
+		Port: port,
+		IP:   net.ParseIP("0.0.0.0"),
+	}
+	conn, err := net.ListenUDP("udp", &addr)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	var buf [4096]byte
+	for {
+		rlen, remote, err := conn.ReadFromUDP(buf[:])
+		if err != nil {
+			logger.Warn("could not read packet", err)
+		}
+		logger.Infof("got trapdata from %s\n", remote.IP)
+		pckt := buf[:rlen]
+
+		err = ants.Submit(func() {
+			h := NewSnmpHandler(g.Default, out) // TODO quite ugly, refactor at some point
+			h.HandlePacket(pckt)
+		})
+		if err != nil {
+			logger.Warn("Error in processing goroutine", err)
+		}
+	}
 
 }

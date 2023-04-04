@@ -27,7 +27,7 @@ import (
 func main() {
 	var log = logrus.New()
 
-	port := "9999"
+	port := 9999
 	log.Info("Starting snmp listener at port %s", port)
 
 	snmp_channel := make(chan []byte)

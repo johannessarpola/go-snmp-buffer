@@ -1,4 +1,4 @@
-package snmp
+package serdes
 
 import (
 	"bytes"
