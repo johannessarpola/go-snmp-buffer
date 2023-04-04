@@ -7,6 +7,7 @@ import (
 	g "github.com/gosnmp/gosnmp"
 )
 
+// TODO use args to count and some variation
 func main() {
 
 	// Default is a pointer to a GoSNMP struct that contains sensible defaults
@@ -32,7 +33,7 @@ func main() {
 		Variables: []g.SnmpPDU{pdu},
 	}
 
-	for j := 0; j <= 10000; j++ {
+	for j := 0; j <= 10000; j++ { // TODO from arg
 		_, err = g.Default.SendTrap(trap)
 		if err != nil {
 			log.Fatalf("SendTrap() err: %v", err)
