@@ -1,6 +1,8 @@
 package models
 
-import "github.com/johannessarpola/go-network-buffer/utils"
+import (
+	"github.com/johannessarpola/go-network-buffer/utils"
+)
 
 type Index struct {
 	Name   string

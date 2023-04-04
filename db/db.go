@@ -1,6 +1,8 @@
 package db
 
 import (
+	"sync"
+
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
@@ -11,10 +13,12 @@ var logger = logrus.New()
 
 // TODO Hand multiple offsets?
 type Data struct {
-	DB          *badger.DB
-	current_idx m.Index
-	offset_idx  m.Index
-	prefix      []byte
+	DB             *badger.DB
+	current_idx    m.Index
+	current_idx_mu sync.Mutex
+	offset_idx     m.Index
+	offset_idx_mu  sync.Mutex
+	prefix         []byte
 }
 
 // TODO Add batch support so it is offset + n
@@ -87,9 +91,16 @@ func (data *Data) init_index(idx *m.Index) {
 	}
 }
 
+// Should be thread safe
 func (data *Data) Append(input []byte) error {
+	data.current_idx_mu.Lock()
+	defer data.current_idx_mu.Unlock()
+
+	logger.Info("appending event")
+
 	return data.DB.Update(func(txn *badger.Txn) error {
-		_, err := data.IncreaseCurrentIndex()
+		idx, err := data.IncreaseCurrentIndex()
+		logger.Infof("current idx: %d", idx)
 		if err != nil {
 			logger.Info("Could not increase current index")
 		}
@@ -118,33 +129,10 @@ func (data *Data) IncreaseCurrentIndex() (uint64, error) {
 	return data.current_idx.Value, err
 }
 
-func (data *Data) Connect(c <-chan []byte) {
-
-	// Debug print
-	n := data.GetCurrentIndex()
-	logger.Infof("\n%d", n)
-
-	for v := range c {
-		data.Append(v)
-
-		// Debug print
-		n := data.GetCurrentIndex()
-		logger.Info("\n%d", n)
-	}
-
-	defer data.DB.Close()
-}
-
-// Can be used to move offset forward, save(bool) to control if it is persisted also
-func (data *Data) IncrementGetOffset(save bool) (*m.Index, error) {
-	data.offset_idx.Increment()
-	if save {
-		data.UpdateOffset(data.current_idx.Value)
-	}
-	return &data.offset_idx, nil
-}
-
 func (data *Data) UpdateOffset(new_val uint64) error {
+	data.offset_idx_mu.Lock()
+	defer data.offset_idx_mu.Unlock()
+
 	data.offset_idx.SetValue(new_val)
 	err := data.SaveIndex(data.offset_idx)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"net"
 
 	g "github.com/gosnmp/gosnmp"
+	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/models"
 	"github.com/johannessarpola/go-network-buffer/serdes"
 	"github.com/panjf2000/ants/v2"
@@ -40,7 +41,7 @@ func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- []byte) *SnmpHandler {
 	return h
 }
 
-func Start(port int, out chan<- []byte) {
+func Start(port int, data *db.Data) {
 	// TODO Cleanup
 	defer ants.Release()
 	ants, err := ants.NewPool(100)
@@ -68,8 +69,10 @@ func Start(port int, out chan<- []byte) {
 		pckt := buf[:rlen]
 
 		err = ants.Submit(func() {
-			h := NewSnmpHandler(g.Default, out) // TODO quite ugly, refactor at some point
+			rsc := make(chan []byte, 1)
+			h := NewSnmpHandler(g.Default, rsc) // TODO quite ugly, refactor at some point
 			h.HandlePacket(pckt)
+			data.Append(<-rsc)
 		})
 		if err != nil {
 			logger.Warn("Error in processing goroutine", err)

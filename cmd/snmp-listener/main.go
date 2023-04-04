@@ -29,16 +29,12 @@ func main() {
 
 	port := 9999
 	log.Info("Starting snmp listener at port %s", port)
-
-	snmp_channel := make(chan []byte)
-	go listener.Start(port, snmp_channel)
-
 	folder := "../../_tmp"
 	prefix := "snmp_"
-	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
 	data := db.NewData(folder, prefix)
-	go data.Connect(snmp_channel)
+	go listener.Start(port, data)
 
+	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
 	for {
 		time.Sleep(1 * time.Second) // TODO Remove
 	}
