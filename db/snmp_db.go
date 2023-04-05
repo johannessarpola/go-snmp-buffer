@@ -14,23 +14,38 @@ var _ = m.NewIndex("abc", 1)
 
 // TODO Hand multiple offsets?
 type SnmpDB struct {
-	DB             *badger.DB
-	current_idx    m.Index
-	current_idx_mu sync.Mutex
-	offset_idx     m.Index
-	offset_idx_mu  sync.Mutex
-	prefix         []byte
+	sync.Mutex
+	DB      *badger.DB
+	IndexDB *IndexDB
+	prefix  []byte
+}
+
+func (data *SnmpDB) prefixed_current_idx(key []byte) []byte {
+	return append(data.prefix, key...)
 }
 
 func (data *SnmpDB) SetCapacity(size uint64) {
-
 }
 
 func (data *SnmpDB) Capacity() uint64 {
 	return 0
 }
 
-func (data *SnmpDB) Enqueue(v []byte) {
+func (data *SnmpDB) Enqueue(v []byte) error {
+	data.Lock()
+	defer data.Unlock()
+
+	logger.Info("appending event")
+	return data.DB.Update(func(txn *badger.Txn) error {
+		idx, err := data.IndexDB.IncrementCurrentIndex()
+		logger.Infof("current idx: %d", idx)
+		if err != nil {
+			logger.Info("Could not increase current index")
+		}
+		k := data.prefixed_current_idx(idx.ValueAsBytes())
+		txn.Set(k, v)
+		return nil
+	})
 
 }
 

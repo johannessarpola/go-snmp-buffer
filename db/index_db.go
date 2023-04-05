@@ -9,11 +9,9 @@ import (
 )
 
 type IndexDB struct {
-	DB             *badger.DB
-	current_idx    m.Index
-	current_idx_mu sync.Mutex
-	offset_idx     m.Index
-	offset_idx_mu  sync.Mutex
+	DB          *badger.DB
+	current_idx m.Index
+	offset_idx  m.Index
 }
 
 func NewIndexDB(path string, db *badger.DB) *IndexDB {
@@ -77,6 +75,14 @@ func (data *IndexDB) GetIndexNbr(index_name string) (uint64, error) {
 	} else {
 		return idx.Value, nil
 	}
+}
+
+func (data *IndexDB) IncrementCurrentIndex() (*m.Index, error) {
+	return data.IncrementIndex(data.current_idx.Name)
+}
+
+func (data *IndexDB) IncrementOffsetIndex() (*m.Index, error) {
+	return data.IncrementIndex(data.offset_idx.Name)
 }
 
 func (data *IndexDB) IncrementIndex(index_name string) (*m.Index, error) {

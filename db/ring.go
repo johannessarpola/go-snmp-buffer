@@ -16,7 +16,7 @@ type RingBuffer interface {
 	/*
 		Enqueue a value into the Ring buffer.
 	*/
-	Enqueue(i interface{})
+	Enqueue(i interface{}) error
 	/*
 		Dequeue a value from the Ring buffer.
 
