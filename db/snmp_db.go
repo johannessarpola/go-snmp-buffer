@@ -50,6 +50,10 @@ func (data *SnmpDB) Enqueue(v []byte) error {
 }
 
 func (data *SnmpDB) Dequeue() []byte {
+	// TODO Shuold be update offset and remove the item
+	// data.DB.Update(func(txn *badger.Txn) error {
+	// 	txn.Delete()
+	// })
 	return nil
 }
 

@@ -8,6 +8,7 @@ import (
 	u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
+// TODO Could be just IndexDB -> Index with ID
 type IndexDB struct {
 	DB          *badger.DB
 	current_idx m.Index
