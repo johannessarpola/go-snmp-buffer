@@ -31,7 +31,7 @@ func main() {
 	log.Info("Starting snmp listener at port %s", port)
 	folder := "../../_tmp"
 	prefix := "snmp_"
-	data := db.NewData(folder, prefix)
+	data := db.NewDatabase(folder, prefix)
 	go listener.Start(port, data)
 
 	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)

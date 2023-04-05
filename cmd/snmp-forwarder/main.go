@@ -20,9 +20,10 @@ var logger = logrus.New()
 func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
 
-	data := db.NewData("../../_tmp", "snmp_") // Will cause conflict probably if run with listener
+	data := db.NewDatabase("../../_tmp", "snmp_") // Will cause conflict probably if run with listener
 	stream := data.GetOffsettedStream(8, "snmp.Forwarder")
 
+	// TODO Refactor to use RingDB Deque
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(buf *z.Buffer) error {
 		list, err := badger.BufferToKVList(buf)
@@ -30,7 +31,7 @@ func main() {
 			return err
 		}
 
-		var last_k uint64 = 0
+		//var last_k uint64 = 0
 		for _, kv := range list.Kv {
 			if kv.StreamDone {
 				logger.Info("Batch done!")
@@ -41,7 +42,7 @@ func main() {
 			k := u.ConvertToUint64(kv.Key[len(prefix):]) // TODO Ugly as f
 			fmt.Printf("key: %d\n", k)
 			v := kv.Value
-			last_k = k
+			//last_k = k
 
 			p, err := serdes.Decode(v)
 			if err != nil {
@@ -69,7 +70,7 @@ func main() {
 			}
 
 		}
-		data.UpdateOffset(last_k)
+		// data.UpdateOffset(last_k) // TODO Not working anymore
 		return nil // TODO Needs some handling
 	}
 

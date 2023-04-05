@@ -1,10 +1,13 @@
 package models
 
 import (
+	"sync"
+
 	"github.com/johannessarpola/go-network-buffer/utils"
 )
 
 type Index struct {
+	sync.Mutex
 	Name   string
 	Value  uint64
 	Exists bool
