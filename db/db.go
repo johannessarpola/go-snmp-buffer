@@ -146,11 +146,10 @@ func (data *Data) SaveIndex(idx m.Index) error {
 		return txn.Set(idx.AsBytes())
 	})
 	return err
-
 }
 
 func (data *Data) GetIndex(index_name string) (m.Index, error) {
-	idx := m.ZeroIndex(index_name) // Have initial struct
+	idx := m.ZeroIndex(index_name) // Have initial struct, 0 is correct for uninitialized
 	err := data.DB.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(idx.KeyAsBytes())
 
@@ -158,6 +157,7 @@ func (data *Data) GetIndex(index_name string) (m.Index, error) {
 			logger.Info("Index not found")
 			return err
 		}
+
 		return item.Value(func(val []byte) error {
 			idx.SetValue(u.ConvertToUint64(val))
 			return nil

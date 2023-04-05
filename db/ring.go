@@ -1,18 +1,18 @@
-package utils
+package db
 
 type RingBuffer interface {
 	/*
 		Set the maximum size of the ring buffer.
 	*/
-	SetCapacity(size int)
+	SetCapacity(size uint64)
 	/*
 		Capacity returns the current capacity of the ring buffer.
 	*/
-	Capacity() int
+	Capacity() uint64
 	/*
 		ContentSize returns the current number of elements inside the ring buffer.
 	*/
-	ContentSize() int
+	ContentSize() uint64
 	/*
 		Enqueue a value into the Ring buffer.
 	*/
