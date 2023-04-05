@@ -5,10 +5,9 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/models"
-	u "github.com/johannessarpola/go-network-buffer/utils"
+	// u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
-var _ = u.ConvertToByteArr()
 var _ = m.NewIndex("abc", 1)
 
 //var logger = logrus.New() // TODO Fix scope
