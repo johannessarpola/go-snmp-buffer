@@ -1,6 +1,8 @@
 package db
 
 import (
+	"sync"
+
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
@@ -8,6 +10,7 @@ import (
 
 // TODO Could be just IndexStore -> Index with ID
 type IndexStore struct {
+	sync.Mutex
 	db  *badger.DB
 	idx *m.Index
 }
@@ -57,25 +60,22 @@ func (data *IndexStore) GetNbr() (uint64, error) {
 }
 
 func (data *IndexStore) Increment() (*m.Index, error) {
-	idx, err := data.Get()
-	if err != nil {
-		panic(err) // TODO
-	}
 
-	idx.Lock()
-	defer idx.Unlock()
+	data.Lock()
+	defer data.Unlock()
 
-	err = data.db.Update(func(txn *badger.Txn) error {
-		idx.Increment()
-		return data.Save()
+	err := data.db.Update(func(txn *badger.Txn) error {
+		data.idx.Value = data.idx.Value + 1
+		return data.save()
 	})
 	if err != nil {
+		logger.Error("Error error")
 		panic(err) // TODO
 	}
-	return &idx, err
+	return data.Get()
 }
 
-func (data *IndexStore) Get() (m.Index, error) {
+func (data *IndexStore) Get() (*m.Index, error) {
 	// TODO Could be optimized to be something like withIndex(func(idx )-> T) [single query]
 	idx := m.ZeroIndex(data.idx.Name) // Have initial struct, 0 is correct for uninitialized
 	err := data.db.View(func(txn *badger.Txn) error {
@@ -92,13 +92,10 @@ func (data *IndexStore) Get() (m.Index, error) {
 		})
 	})
 
-	return idx, err
+	return &idx, err
 }
 
-func (data *IndexStore) Save() error {
-	data.idx.Lock()
-	defer data.idx.Unlock()
-
+func (data *IndexStore) save() error {
 	err := data.db.Update(func(txn *badger.Txn) error {
 		return txn.Set(data.idx.AsBytes())
 	})

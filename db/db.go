@@ -1,29 +1,23 @@
 package db
 
 import (
-	"sync"
-
 	"github.com/dgraph-io/badger/v4"
-	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.New()
 
-// TODO Hand multiple offsets?
-type Data struct {
-	DB             *badger.DB
-	current_idx    m.Index
-	current_idx_mu sync.Mutex
-	offset_idx     m.Index
-	offset_idx_mu  sync.Mutex
-	prefix         []byte
+// TODO Clean up the hierarchy after refactoring, this is quite useless class, should access RingDB direct
+type Database struct {
+	db     *badger.DB
+	RingDB *RingDB
+	prefix []byte
 }
 
 // TODO Add batch support so it is offset + n
-func (data *Data) GetOffsettedStream(goroutines int, id string) *badger.Stream {
-	stream := data.DB.NewStream()
+func (data *Database) GetOffsettedStream(goroutines int, id string) *badger.Stream {
+	stream := data.db.NewStream()
 
 	// -- Optional settings
 	stream.NumGo = goroutines // Set number of goroutines to use for iteration.
@@ -36,133 +30,28 @@ func (data *Data) GetOffsettedStream(goroutines int, id string) *badger.Stream {
 	return stream
 }
 
-func (data *Data) after_offset_choosekey(item *badger.Item) bool {
+func (data *Database) after_offset_choosekey(item *badger.Item) bool {
 	k := item.Key()[len(data.prefix):]
 	n := u.ConvertToUint64(k)
-	return n > data.GetOffsetIndex()
+	o, _ := data.RingDB.IndexDB.oidx_store.GetNbr() // TODO Clean up accessors and handling
+	return n > o
 }
 
-func NewData(path string, prefix string) *Data {
+func NewDatabase(path string, prefix string) *Database {
 	opts := badger.DefaultOptions(path)
 	db, err := badger.Open(opts)
 	if err != nil {
 		logger.Fatal("Could not open filestore")
 	}
 
-	current_idx := m.ZeroIndex("current_idx")
-	offset_idx := m.ZeroIndex("offset_idx")
+	rdb := NewRingDB(db, prefix)
 
-	d := &Data{
-		DB:          db,
-		current_idx: current_idx,
-		offset_idx:  offset_idx,
-		prefix:      []byte(prefix),
+	d := &Database{
+		db:     db,
+		RingDB: rdb,
+		prefix: []byte(prefix), // TODO Remove and move to ringdb
 	}
-
-	d.init_index(&d.current_idx)
-	d.init_index(&d.offset_idx)
 
 	return d
 
-}
-
-func (data *Data) init_index(idx *m.Index) {
-	err := data.DB.Update(func(txn *badger.Txn) error {
-		item, err := txn.Get(idx.KeyAsBytes())
-
-		if err == nil {
-			item.Value(func(val []byte) error {
-				n := u.ConvertToUint64(val)
-				logger.Infof("Value exists, setting %s from db to %d", idx.Name, n)
-				idx.SetValue(n)
-				return nil
-			})
-		} else {
-			logger.Infof("Value does not exist, setting %s to 0", idx.Name)
-		}
-
-		err = txn.Set(idx.AsBytes())
-		return err
-
-	})
-
-	if err != nil {
-		logger.Fatalf("Could not initialize index %s", idx.Name)
-	}
-}
-
-// Should be thread safe
-func (data *Data) Append(input []byte) error {
-	data.current_idx_mu.Lock()
-	defer data.current_idx_mu.Unlock()
-
-	logger.Info("appending event")
-
-	return data.DB.Update(func(txn *badger.Txn) error {
-		idx, err := data.IncreaseCurrentIndex()
-		logger.Infof("current idx: %d", idx)
-		if err != nil {
-			logger.Info("Could not increase current index")
-		}
-		txn.Set(data.prefixed_current_idx(data.current_idx.ValueAsBytes()), input)
-		return nil
-	})
-}
-
-func (data *Data) prefixed_current_idx(key []byte) []byte {
-	return append(data.prefix, key...)
-}
-
-func (data *Data) GetCurrentIndex() uint64 {
-	return data.current_idx.Value
-}
-
-func (data *Data) GetOffsetIndex() uint64 {
-	return data.offset_idx.Value
-}
-
-func (data *Data) IncreaseCurrentIndex() (uint64, error) {
-	err := data.DB.Update(func(txn *badger.Txn) error {
-		data.current_idx.Increment()
-		return txn.Set(data.current_idx.AsBytes())
-	})
-	return data.current_idx.Value, err
-}
-
-func (data *Data) UpdateOffset(new_val uint64) error {
-	data.offset_idx_mu.Lock()
-	defer data.offset_idx_mu.Unlock()
-
-	data.offset_idx.SetValue(new_val)
-	err := data.SaveIndex(data.offset_idx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (data *Data) SaveIndex(idx m.Index) error {
-	err := data.DB.Update(func(txn *badger.Txn) error {
-		return txn.Set(idx.AsBytes())
-	})
-	return err
-}
-
-func (data *Data) GetIndex(index_name string) (m.Index, error) {
-	idx := m.ZeroIndex(index_name) // Have initial struct, 0 is correct for uninitialized
-	err := data.DB.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(idx.KeyAsBytes())
-
-		if err != nil {
-			logger.Info("Index not found")
-			return err
-		}
-
-		return item.Value(func(val []byte) error {
-			idx.SetValue(u.ConvertToUint64(val))
-			return nil
-		})
-	})
-
-	return idx, err
 }

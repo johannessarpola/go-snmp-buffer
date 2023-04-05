@@ -12,9 +12,9 @@ type IndexDB struct {
 	oidx_store *IndexStore
 }
 
-func NewIndexDB(path string, db *badger.DB) *IndexDB {
+func NewIndexDB(db *badger.DB) *IndexDB {
 	current_idx_store := NewIndexStore("current_idx", db) // TODO Configurable
-	offset_idx_store := NewIndexStore("current_idx", db)  // TODO Configurable
+	offset_idx_store := NewIndexStore("offset_idx", db)   // TODO Configurable
 
 	d := &IndexDB{
 		db:         db,

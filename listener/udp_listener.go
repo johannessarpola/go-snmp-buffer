@@ -16,7 +16,7 @@ var logger = logrus.New()
 type SnmpHandler struct {
 	// TODO Add support for v3 at some point
 	gosnmp *g.GoSNMP
-	out    chan<- []byte // TODO add some serious tool for this
+	out    chan<- models.Element // TODO add some serious tool for this
 }
 
 func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {
@@ -28,12 +28,12 @@ func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {
 		return err
 	} else {
 		// TODO Add some actual lib instead of chan
-		snmp.out <- b // arr is copied to channel
+		snmp.out <- models.NewElement(b) // arr is copied to channel
 	}
 	return nil
 }
 
-func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- []byte) *SnmpHandler {
+func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- models.Element) *SnmpHandler {
 	h := &SnmpHandler{
 		gosnmp: gosnmp,
 		out:    out,
@@ -41,7 +41,7 @@ func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- []byte) *SnmpHandler {
 	return h
 }
 
-func Start(port int, data *db.Data) {
+func Start(port int, data *db.Database) {
 	// TODO Cleanup
 	defer ants.Release()
 	ants, err := ants.NewPool(100)
@@ -69,10 +69,10 @@ func Start(port int, data *db.Data) {
 		pckt := buf[:rlen]
 
 		err = ants.Submit(func() {
-			rsc := make(chan []byte, 1)
+			rsc := make(chan models.Element, 1)
 			h := NewSnmpHandler(g.Default, rsc) // TODO quite ugly, refactor at some point
 			h.HandlePacket(pckt)
-			data.Append(<-rsc)
+			data.RingDB.Enqueue(<-rsc)
 		})
 		if err != nil {
 			logger.Warn("Error in processing goroutine", err)

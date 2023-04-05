@@ -10,8 +10,10 @@ func main() {
 	folder := "../../_tmp"
 	prefix := "snmp_"
 	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
-	data := db.NewData(folder, prefix)
+	data := db.NewDatabase(folder, prefix)
 
-	log.Infof("Current idx: %d", data.GetCurrentIndex())
-	log.Infof("Offset idx: %d", data.GetOffsetIndex())
+	cidx, _ := data.RingDB.IndexDB.GetCurrentIndex()
+	oidx, _ := data.RingDB.IndexDB.GetOffsetIndex()
+	log.Infof("Current idx: %d", cidx)
+	log.Infof("Offset idx: %d", oidx)
 }
