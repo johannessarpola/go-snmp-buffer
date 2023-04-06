@@ -28,4 +28,4 @@ Time it took to take in 10000 packets was 382 ms
 Time it took to take in 10000 packets was 383 ms
 ```
 
-Space consumed with ´level=info msg="Current idx: 808102"` is 84mb (packets are very simple)
+Space consumed with `level=info msg="Current idx: 808102"` is 84mb (packets are very simple)
