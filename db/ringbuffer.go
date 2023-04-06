@@ -4,15 +4,15 @@ type RingBuffer interface {
 	/*
 		Set the maximum size of the ring buffer.
 	*/
-	SetCapacity(size uint64)
+	SetCapacity(size uint64) error
 	/*
 		Capacity returns the current capacity of the ring buffer.
 	*/
-	Capacity() uint64
+	Capacity() (uint64, error)
 	/*
 		ContentSize returns the current number of elements inside the ring buffer.
 	*/
-	ContentSize() uint64
+	ContentSize() (uint64, error)
 	/*
 		Enqueue a value into the Ring buffer.
 	*/

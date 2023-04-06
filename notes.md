@@ -6,7 +6,6 @@
 - Forwarder can be started every with set times like every 10 seconds
     - Forwarder should know on what index it is or either remove sent records
 - Persistence should expire records after a set while (e.g. 7 days)
-- Change the db.go to conform to a ringbuffer interface(?)
 - add a cli to manage the database
 # Minor things to do
 - Limit the trap output to necessary fields
