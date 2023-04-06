@@ -19,27 +19,27 @@ type Database struct {
 	prefix []byte
 }
 
-// TODO Add batch support so it is offset + n
-func (data *Database) GetOffsettedStream(goroutines int, id string) *badger.Stream {
-	stream := data.db.NewStream()
+// // TODO Add batch support so it is offset + n
+// func (data *Database) GetOffsettedStream(goroutines int, id string) *badger.Stream {
+// 	stream := data.db.NewStream()
 
-	// -- Optional settings
-	stream.NumGo = goroutines // Set number of goroutines to use for iteration.
-	stream.Prefix = data.prefix
-	stream.LogPrefix = id
+// 	// -- Optional settings
+// 	stream.NumGo = goroutines // Set number of goroutines to use for iteration.
+// 	stream.Prefix = data.prefix
+// 	stream.LogPrefix = id
 
-	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
-	stream.ChooseKey = data.after_offset_choosekey
+// 	// ChooseKey is called concurrently for every key. If left nil, assumes true by default.
+// 	stream.ChooseKey = data.after_offset_choosekey
 
-	return stream
-}
+// 	return stream
+// }
 
-func (data *Database) after_offset_choosekey(item *badger.Item) bool {
-	k := item.Key()[len(data.prefix):]
-	n := u.ConvertToUint64(k)
-	o, _ := data.RingDB.IndexDB.oidx_store.GetNbr() // TODO Clean up accessors and handling
-	return n > o
-}
+// func (data *Database) after_offset_choosekey(item *badger.Item) bool {
+// 	k := item.Key()[len(data.prefix):]
+// 	n := u.ConvertToUint64(k)
+// 	o, _ := data.RingDB.IndexDB.oidx_store.GetNbr() // TODO Clean up accessors and handling
+// 	return n > o
+// }
 
 func NewDatabase(path string, prefix string) *Database {
 	opts := badger.DefaultOptions(path)
