@@ -50,3 +50,11 @@ Time it took to take in 10000 packets was 406 ms
 ```
 
 Space consumed with `level=info msg="Current idx: 808102"` is 84mb (packets are very simple)
+
+Same env with forwarder with same benchmarker
+
+```
+Time it took to take in 10000 packets was 287 ms
+Time it took to take in 10000 packets was 248 ms
+Time it took to take in 10000 packets was 212 ms
+```
