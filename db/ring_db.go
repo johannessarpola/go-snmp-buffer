@@ -51,6 +51,8 @@ func (data *RingDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 }
 
 func (data *RingDB) SetCapacity(size uint64) error {
+	data.Lock()
+	defer data.Unlock()
 	// This should set the current idx
 	return data.IndexDB.cidx_store.Set(size)
 }
