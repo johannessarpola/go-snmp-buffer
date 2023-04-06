@@ -79,15 +79,15 @@ func (data *IndexStore) Increment() (*m.Index, error) {
 	if err != nil {
 		logger.Error("Error error")
 		panic(err) // TODO
+		return nil, err
 	}
-	return data.Get()
+	return data.idx, nil
 }
 
 func (data *IndexStore) Get() (*m.Index, error) {
 	// TODO Could be optimized to be something like withIndex(func(idx )-> T) [single query]
-	idx := m.ZeroIndex(data.idx.Name) // Have initial struct, 0 is correct for uninitialized
 	err := data.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(idx.KeyAsBytes())
+		item, err := txn.Get(data.idx.KeyAsBytes())
 
 		if err != nil {
 			logger.Info("Index not found", err)
@@ -95,12 +95,12 @@ func (data *IndexStore) Get() (*m.Index, error) {
 
 		return item.Value(func(val []byte) error {
 			// Set the structs value from the one in db
-			idx.SetValue(u.ConvertToUint64(val))
+			data.idx.SetValue(u.ConvertToUint64(val))
 			return nil
 		})
 	})
 
-	return &idx, err
+	return data.idx, err
 }
 
 func (data *IndexStore) save() error {
