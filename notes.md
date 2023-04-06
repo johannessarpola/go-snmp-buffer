@@ -23,11 +23,21 @@
 ## V2c
 
 9.4.2023 on 2,6 GHz 6-Core Intel Core i7 (mbp)
-```
+```sh
+#ants:1
+Time it took to take in 10000 packets was 555 ms
+Time it took to take in 10000 packets was 583 ms
+Time it took to take in 10000 packets was 521 ms
+
+# ants: 100
 Time it took to take in 10000 packets was 374 ms
 Time it took to take in 10000 packets was 376 ms
 Time it took to take in 10000 packets was 382 ms
-Time it took to take in 10000 packets was 383 ms
+
+#ants: 1000
+Time it took to take in 10000 packets was 378 ms
+Time it took to take in 10000 packets was 398 ms
+Time it took to take in 10000 packets was 406 ms
 ```
 
 Space consumed with `level=info msg="Current idx: 808102"` is 84mb (packets are very simple)
