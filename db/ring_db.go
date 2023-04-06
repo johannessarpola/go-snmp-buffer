@@ -10,8 +10,6 @@ import (
 	// u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
-var _ = m.NewIndex("abc", 1)
-
 //var logger = logrus.New() // TODO Fix scope
 
 // TODO Hand multiple offsets?
@@ -53,11 +51,17 @@ func (data *RingDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 	return &m, nil
 }
 
-func (data *RingDB) SetCapacity(size uint64) {
+func (data *RingDB) SetCapacity(size uint64) error {
+	// This should set the current idx
+	return data.IndexDB.cidx_store.Set(size)
 }
 
-func (data *RingDB) Capacity() uint64 {
-	return 0
+func (data *RingDB) ContentSize() (uint64, error) {
+	return data.IndexDB.oidx_store.GetNbr()
+}
+
+func (data *RingDB) Capacity() (uint64, error) {
+	return data.IndexDB.cidx_store.GetNbr()
 }
 
 func (data *RingDB) Enqueue(v models.Element) error {

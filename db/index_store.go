@@ -59,8 +59,16 @@ func (data *IndexStore) GetNbr() (uint64, error) {
 	}
 }
 
-func (data *IndexStore) Increment() (*m.Index, error) {
+func (data *IndexStore) Set(newval uint64) error {
+	data.Lock()
+	defer data.Unlock()
 
+	return data.db.Update(func(txn *badger.Txn) error {
+		return txn.Set(data.idx.KeyAsBytes(), u.ConvertToByteArr(newval))
+	})
+}
+
+func (data *IndexStore) Increment() (*m.Index, error) {
 	data.Lock()
 	defer data.Unlock()
 
