@@ -1,14 +1,13 @@
 package listener
 
 import (
-	"fmt"
 	"net"
-	"time"
 
 	g "github.com/gosnmp/gosnmp"
 	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/models"
 	"github.com/johannessarpola/go-network-buffer/serdes"
+	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/panjf2000/ants/v2"
 	"github.com/sirupsen/logrus"
 )
@@ -46,25 +45,6 @@ func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- models.Element) *SnmpHandler {
 	return h
 }
 
-func benchmark(done <-chan bool) {
-
-	measure_interval := 10000 // TODO Maybe configurable
-	i := 0
-	start := time.Now().UnixMilli()
-	fmt.Printf("Star time was %d", start)
-
-	for _ = range done {
-		i++
-		if i%measure_interval == 0 {
-			now := time.Now().UnixMilli()
-			dur := now - start
-			fmt.Printf("Time it took to take in %d packets was %d ms\n", measure_interval, dur)
-			start = now
-		}
-	}
-
-}
-
 func Start(port int, data *db.Database) {
 	// TODO Cleanup
 	defer ants.Release()
@@ -86,7 +66,7 @@ func Start(port int, data *db.Database) {
 	var buf [4096]byte
 	dones := make(chan bool)
 	defer close(dones)
-	go benchmark(dones)
+	go u.MeasureRate(dones)
 	for {
 		rlen, _, err := conn.ReadFromUDP(buf[:])
 		if err != nil {

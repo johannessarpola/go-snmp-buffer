@@ -32,7 +32,7 @@ func main() {
 		Variables: []g.SnmpPDU{pdu},
 	}
 
-	for i := 0; i <= 10000000; i++ { // TODO from arg
+	for i := 0; i <= 1000000; i++ { // TODO from arg
 		_, err = g.Default.SendTrap(trap)
 		fmt.Printf("Send trap nbr %d\n", i)
 		if err != nil {

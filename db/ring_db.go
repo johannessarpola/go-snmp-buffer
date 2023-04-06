@@ -29,7 +29,7 @@ func NewRingDB(db *badger.DB, prefix string) *RingDB {
 	}
 }
 
-func (data *RingDB) prefixed_current_idx(key []byte) []byte {
+func (data *RingDB) prefixed_arr(key []byte) []byte {
 	return append(data.prefix, key...)
 }
 
@@ -37,11 +37,17 @@ func (data *RingDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 	m := models.EmptyElement()
 	err := data.db.View(func(txn *badger.Txn) error {
 		barr := utils.ConvertToByteArr(idx)
-		item, err := txn.Get(data.prefixed_current_idx(barr))
+		k := data.prefixed_arr(barr)
+		item, err := txn.Get(k)
 		if err != nil {
 			logger.Errorf("Could not get element for %d", idx)
 		}
-		m.Value, err = item.ValueCopy(nil) // According to docs should return new array with nil passed
+		if item != nil {
+			item.Value(func(val []byte) error {
+				m.Value = val
+				return nil
+			})
+		}
 		return err
 	})
 	if err != nil {
@@ -70,15 +76,17 @@ func (data *RingDB) Enqueue(v models.Element) error {
 	defer data.Unlock()
 
 	logger.Info("appending stuff")
-	idx, err := data.IndexDB.IncrementCurrentIndex()
+	idx, err := data.IndexDB.GetCurrentIndex()
 	logger.Infof("current idx: %d", idx)
 	return data.db.Update(func(txn *badger.Txn) error {
 		if err != nil {
 			logger.Info("Could not increase current index")
 		}
-		k := data.prefixed_current_idx(idx.ValueAsBytes())
+		arr := utils.ConvertToByteArr(idx)
+		k := data.prefixed_arr(arr)
 		txn.Set(k, v.Value)
-		return nil
+		data.IndexDB.IncrementCurrentIndex()
+		return nil // TODO
 	})
 
 }
@@ -89,8 +97,13 @@ func (data *RingDB) Dequeue() (*models.Element, error) {
 
 	logger.Info("dequeue stuff")
 	el, err := data.Peek()
-	logger.Info("incrementing oidx")
-	data.IndexDB.oidx_store.Increment() // As this moves forward its fine to just increase offset
+	if el != nil {
+		logger.Info("incrementing oidx")
+		data.IndexDB.oidx_store.Increment() // As this moves forward its fine to just increase offset
+	} else {
+		logger.Info("Empty buffer")
+	}
+
 	// you could also delete it here as according to spec but maybe later, or add a cleanup job on separate cmd
 	return el, err
 }
