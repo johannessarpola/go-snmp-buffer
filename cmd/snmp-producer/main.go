@@ -1,9 +1,7 @@
 package main
 
 import (
-	"log"
-	"os"
-
+	"fmt"
 	g "github.com/gosnmp/gosnmp"
 )
 
@@ -16,10 +14,11 @@ func main() {
 	g.Default.Port = 9999
 	g.Default.Version = g.Version2c
 	g.Default.Community = "public"
-	g.Default.Logger = g.NewLogger(log.New(os.Stdout, "", 0))
+	//g.Default.Logger = g.NewLogger(log.New(os.Stdout, "", 0))
 	err := g.Default.Connect()
 	if err != nil {
-		log.Fatalf("Connect() err: %v", err)
+		panic(err)
+		//log.Fatalf("Connect() err: %v", err)
 	}
 	defer g.Default.Conn.Close()
 
@@ -33,10 +32,11 @@ func main() {
 		Variables: []g.SnmpPDU{pdu},
 	}
 
-	for j := 0; j <= 10000; j++ { // TODO from arg
+	for i := 0; i <= 10000000; i++ { // TODO from arg
 		_, err = g.Default.SendTrap(trap)
+		fmt.Printf("Send trap nbr %d\n", i)
 		if err != nil {
-			log.Fatalf("SendTrap() err: %v", err)
+			panic(err)
 		}
 	}
 

@@ -8,6 +8,10 @@ import (
 
 var logger = logrus.New()
 
+func init() {
+	logger.SetLevel(logrus.ErrorLevel) // TODO Configurable
+}
+
 // TODO Clean up the hierarchy after refactoring, this is quite useless class, should access RingDB direct
 type Database struct {
 	db     *badger.DB

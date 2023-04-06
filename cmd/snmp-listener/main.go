@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/listener"
 	"github.com/sirupsen/logrus"
@@ -32,10 +30,7 @@ func main() {
 	folder := "../../_tmp"
 	prefix := "snmp_"
 	data := db.NewDatabase(folder, prefix)
-	go listener.Start(port, data)
 
 	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
-	for {
-		time.Sleep(1 * time.Second) // TODO Remove
-	}
+	listener.Start(port, data)
 }

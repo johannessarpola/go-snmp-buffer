@@ -1,7 +1,9 @@
 package listener
 
 import (
+	"fmt"
 	"net"
+	"time"
 
 	g "github.com/gosnmp/gosnmp"
 	"github.com/johannessarpola/go-network-buffer/db"
@@ -21,6 +23,9 @@ type SnmpHandler struct {
 
 func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {
 	trap, err := snmp.gosnmp.UnmarshalTrap(pckt, false) // only supports v2 now
+	if err != nil {
+		panic(err) // TODO
+	}
 	p := models.NewPacket(trap)
 	b, err := serdes.Encode(&p)
 	if err != nil {
@@ -39,6 +44,25 @@ func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- models.Element) *SnmpHandler {
 		out:    out,
 	}
 	return h
+}
+
+func benchmark(done <-chan bool) {
+
+	measure_interval := 10000 // TODO Maybe configurable
+	i := 0
+	start := time.Now().UnixMilli()
+	fmt.Printf("Star time was %d", start)
+
+	for _ = range done {
+		i++
+		if i%measure_interval == 0 {
+			now := time.Now().UnixMilli()
+			dur := now - start
+			fmt.Printf("Time it took to take in %d packets was %d ms\n", measure_interval, dur)
+			start = now
+		}
+	}
+
 }
 
 func Start(port int, data *db.Database) {
@@ -60,12 +84,15 @@ func Start(port int, data *db.Database) {
 	defer conn.Close()
 
 	var buf [4096]byte
+	dones := make(chan bool)
+	defer close(dones)
+	go benchmark(dones)
 	for {
-		rlen, remote, err := conn.ReadFromUDP(buf[:])
+		rlen, _, err := conn.ReadFromUDP(buf[:])
 		if err != nil {
 			logger.Warn("could not read packet", err)
 		}
-		logger.Infof("got trapdata from %s\n", remote.IP)
+		//logger.Debug("got trapdata from %s\n", remote.IP.String())
 		pckt := buf[:rlen]
 
 		err = ants.Submit(func() {
@@ -73,6 +100,7 @@ func Start(port int, data *db.Database) {
 			h := NewSnmpHandler(g.Default, rsc) // TODO quite ugly, refactor at some point
 			h.HandlePacket(pckt)
 			data.RingDB.Enqueue(<-rsc)
+			dones <- true
 		})
 		if err != nil {
 			logger.Warn("Error in processing goroutine", err)

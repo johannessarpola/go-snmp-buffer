@@ -7,6 +7,7 @@
     - Forwarder should know on what index it is or either remove sent records
 - Persistence should expire records after a set while (e.g. 7 days)
 - add a cli to manage the database
+- improve benchmarking to be more valid
 # Minor things to do
 - Limit the trap output to necessary fields
 - [test] Producer needs some variation in the output
@@ -16,3 +17,15 @@
 # Bugs
 
 (none ofc, software is perfect)
+
+# Benchmarks
+
+9.4.2023 on 2,6 GHz 6-Core Intel Core i7 (mbp)
+```
+Time it took to take in 10000 packets was 374 ms
+Time it took to take in 10000 packets was 376 ms
+Time it took to take in 10000 packets was 382 ms
+Time it took to take in 10000 packets was 383 ms
+```
+
+Space consumed with ´level=info msg="Current idx: 808102"` is 84mb (packets are very simple)
