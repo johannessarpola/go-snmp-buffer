@@ -25,6 +25,20 @@ func NewIndexDB(db *badger.DB) *IndexDB {
 	return d
 }
 
+func get_and_increment(idx *IndexStore) (uint64, error) {
+	nbr, err := idx.GetNbr()
+	idx.Increment()
+	return nbr, err
+}
+
+func (data *IndexDB) GetAndIncrementOffset() (uint64, error) {
+	return get_and_increment(data.oidx_store)
+}
+
+func (data *IndexDB) GetAndIncrementCurrentIndex() (uint64, error) {
+	return get_and_increment(data.cidx_store)
+}
+
 func (data *IndexDB) GetCurrentIndex() (uint64, error) {
 	return data.cidx_store.GetNbr()
 }

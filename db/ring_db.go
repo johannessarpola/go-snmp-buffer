@@ -57,26 +57,25 @@ func (data *RingDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 }
 
 func (data *RingDB) SetCapacity(size uint64) error {
+	// TODO Should set the maximunn number of items stored
 	data.Lock()
 	defer data.Unlock()
-	// This should set the current idx
 	return data.IndexDB.cidx_store.Set(size)
 }
 
 func (data *RingDB) ContentSize() (uint64, error) {
-	return data.IndexDB.oidx_store.GetNbr()
-}
-
-func (data *RingDB) Capacity() (uint64, error) {
 	return data.IndexDB.cidx_store.GetNbr()
 }
 
-func (data *RingDB) Enqueue(v models.Element) error {
-	data.Lock()
-	defer data.Unlock()
+func (data *RingDB) Capacity() (uint64, error) {
+	// TODO Should return the number of events stored at max
+	return 0, nil
+}
 
+func (data *RingDB) Enqueue(v models.Element) error {
+	// TODO Add the resetting to 0 when capacity is exceeded
 	logger.Info("appending stuff")
-	idx, err := data.IndexDB.GetCurrentIndex()
+	idx, err := data.IndexDB.GetAndIncrementCurrentIndex()
 	logger.Infof("current idx: %d", idx)
 	return data.db.Update(func(txn *badger.Txn) error {
 		if err != nil {
@@ -85,13 +84,13 @@ func (data *RingDB) Enqueue(v models.Element) error {
 		arr := utils.ConvertToByteArr(idx)
 		k := data.prefixed_arr(arr)
 		txn.Set(k, v.Value)
-		data.IndexDB.IncrementCurrentIndex()
 		return nil // TODO
 	})
 
 }
 
 func (data *RingDB) Dequeue() (*models.Element, error) {
+	// TODO Fix issue where this allows offset > current idx
 	data.Lock()
 	defer data.Unlock()
 
@@ -119,5 +118,6 @@ func (data *RingDB) Peek() (*models.Element, error) {
 }
 
 func (data *RingDB) Values() []*models.Element {
+	// TODO Return stream
 	return nil
 }

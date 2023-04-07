@@ -2,7 +2,6 @@ package db
 
 import (
 	"github.com/dgraph-io/badger/v4"
-	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
