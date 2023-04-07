@@ -24,13 +24,6 @@
 
 (none ofc, software is perfect)
 
-- deque goes over the current index
-
-```
-time="2023-04-06T15:53:33+03:00" level=error msg="Could not get element for 11"
-```
-Steps to reproduce: delete _tmp, start listener, generate some with producer, run forwarder
-
 # Benchmarks
 
 ## V2c
