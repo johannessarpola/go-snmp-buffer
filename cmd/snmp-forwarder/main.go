@@ -65,23 +65,24 @@ func main() {
 	dones := make(chan bool)
 	defer close(dones)
 	go u.MeasureRate(dones)
-	d, _ := data.RingDB.Dequeue()
+	s, _ := data.RingDB.ContentSize()
 	i := 0
+	fmt.Printf("Total at %d\n", s)
+	d, _ := data.RingDB.Dequeue()
 	for d != nil {
+		d, _ = data.RingDB.Dequeue()
 		i++
 		pool.Submit(func() {
+			// TODO Remove
 			if i%5000 == 0 {
-				// TODO Remove
 				fmt.Printf("Currently processed %d elements\n", i)
 				cs, _ := data.RingDB.ContentSize()
-				c, _ := data.RingDB.Capacity()
 				fmt.Printf("Offset index at %d\n", cs)
-				fmt.Printf("Total at %d\n", c)
 			}
 			process_element(d, false)
 			dones <- true
 		})
-		d, _ = data.RingDB.Dequeue()
+
 	}
 
 	// 			println(p.Community)

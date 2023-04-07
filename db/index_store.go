@@ -79,7 +79,6 @@ func (data *IndexStore) Increment() (*m.Index, error) {
 	if err != nil {
 		logger.Error("Error error")
 		panic(err) // TODO
-		return nil, err
 	}
 	return data.idx, nil
 }

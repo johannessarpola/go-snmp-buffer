@@ -78,8 +78,12 @@ func Start(port int, data *db.Database) {
 		err = ants.Submit(func() {
 			rsc := make(chan models.Element, 1)
 			h := NewSnmpHandler(g.Default, rsc) // TODO quite ugly, refactor at some point
-			h.HandlePacket(pckt)
-			data.RingDB.Enqueue(<-rsc)
+			err := h.HandlePacket(pckt)
+			if err != nil {
+				logger.Error("Could not handle packet", err)
+			} else {
+				data.RingDB.Enqueue(<-rsc)
+			}
 			dones <- true
 		})
 		if err != nil {

@@ -75,12 +75,15 @@ func (data *RingDB) Capacity() (uint64, error) {
 func (data *RingDB) Enqueue(v models.Element) error {
 	// TODO Add the resetting to 0 when capacity is exceeded
 	logger.Info("appending stuff")
+	data.Lock()
 	idx, err := data.IndexDB.GetAndIncrementCurrentIndex()
+	data.Unlock()
+	if err != nil {
+		logger.Info("Could not increase current index")
+	}
 	logger.Infof("current idx: %d", idx)
 	return data.db.Update(func(txn *badger.Txn) error {
-		if err != nil {
-			logger.Info("Could not increase current index")
-		}
+
 		arr := utils.ConvertToByteArr(idx)
 		k := data.prefixed_arr(arr)
 		txn.Set(k, v.Value)
@@ -91,20 +94,20 @@ func (data *RingDB) Enqueue(v models.Element) error {
 
 func (data *RingDB) Dequeue() (*models.Element, error) {
 	// TODO Fix issue where this allows offset > current idx
-	data.Lock()
-	defer data.Unlock()
-
+	// you could also delete it here as according to spec but maybe later, or add a cleanup job on separate cmd
 	logger.Info("dequeue stuff")
-	el, err := data.Peek()
-	if el != nil {
-		logger.Info("incrementing oidx")
-		data.IndexDB.oidx_store.Increment() // As this moves forward its fine to just increase offset
+	idx, err := data.IndexDB.GetAndIncrementOffset()
+	logger.Infof("current offset: %d", idx)
+	if err != nil {
+		logger.Info("Could not increase offset index")
+	}
+	cs, _ := data.ContentSize()
+	if idx == cs {
+		return nil, nil
 	} else {
-		logger.Info("Empty buffer")
+		return data.get_prefixed_element(idx)
 	}
 
-	// you could also delete it here as according to spec but maybe later, or add a cleanup job on separate cmd
-	return el, err
 }
 
 func (data *RingDB) Peek() (*models.Element, error) {
