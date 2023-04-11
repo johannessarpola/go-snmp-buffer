@@ -15,7 +15,7 @@ func MeasureRate(done <-chan bool) {
 	start := time.Now().UnixMilli()
 	fmt.Printf("Star time was %d", start) // TODO
 
-	for _ = range done {
+	for range done {
 		i++
 		if i%measure_interval == 0 {
 			now := time.Now().UnixMilli()
