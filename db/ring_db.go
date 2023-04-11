@@ -112,7 +112,9 @@ func (data *RingDB) Dequeue() (*models.Element, error) {
 
 func (data *RingDB) Peek() (*models.Element, error) {
 	logger.Info("peeking stuff")
+	data.Lock()
 	oidx, err := data.IndexDB.oidx_store.GetNbr()
+	data.Unlock()
 	if err != nil {
 		logger.Error("Could not get offset index")
 	}
