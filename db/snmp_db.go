@@ -11,11 +11,19 @@ func init() {
 	logger.SetLevel(logrus.ErrorLevel) // TODO Configurable
 }
 
-// TODO Clean up the hierarchy after refactoring, this is quite useless class, should access RingDB direct
-type Database struct {
-	db     *badger.DB
-	RingDB *RingDB
-	prefix []byte
+type SnmpDB struct {
+	Buffer *RingDB
+}
+
+func NewSnmpDB(fs *badger.DB, idx_db *IndexDB, prefix string) *SnmpDB {
+	rdb := NewRingDB(fs, idx_db, prefix)
+
+	d := &SnmpDB{
+		Buffer: rdb,
+	}
+
+	return d
+
 }
 
 // // TODO Add batch support so it is offset + n
@@ -39,22 +47,3 @@ type Database struct {
 // 	o, _ := data.RingDB.IndexDB.oidx_store.GetNbr() // TODO Clean up accessors and handling
 // 	return n > o
 // }
-
-func NewDatabase(path string, prefix string) *Database {
-	opts := badger.DefaultOptions(path)
-	db, err := badger.Open(opts)
-	if err != nil {
-		logger.Fatal("Could not open filestore")
-	}
-
-	rdb := NewRingDB(db, prefix)
-
-	d := &Database{
-		db:     db,
-		RingDB: rdb,
-		prefix: []byte(prefix), // TODO Remove and move to ringdb
-	}
-
-	return d
-
-}

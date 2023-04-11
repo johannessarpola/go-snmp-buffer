@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/listener"
+	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,19 +19,29 @@ import (
 // 	// Can be any io.Writer, see below for File example
 // 	log.SetOutput(os.Stdout)
 
-// 	// Only log the warning severity or above.
-// 	log.SetLevel(log.Default())
-// }
+//		// Only log the warning severity or above.
+//		log.SetLevel(log.Default())
+//	}
 
 func main() {
 	var log = logrus.New()
 
 	port := 9999
 	log.Info("Starting snmp listener at port %s", port)
-	folder := "../../_tmp"
-	prefix := "snmp_"
-	data := db.NewDatabase(folder, prefix)
+	idx_fs, err := utils.NewFileStore("../../_idxs")
+	if err != nil {
+		log.Fatal("could not open index filestore")
+	}
+	snmp_fs, err := utils.NewFileStore("../../_snmp")
+	if err != nil {
+		log.Fatal("could not open snmp filestore")
+	}
 
-	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
-	listener.Start(port, data)
+	defer idx_fs.Close()  // TODO Handle these more cleanly
+	defer snmp_fs.Close() // TODO Handle these more cleanly
+
+	idx_db := db.NewIndexDB(idx_fs)                     // TODO prefix?
+	snmp_data := db.NewSnmpDB(snmp_fs, idx_db, "snmp_") // TODO Configurable prefix
+
+	listener.Start(port, snmp_data)
 }

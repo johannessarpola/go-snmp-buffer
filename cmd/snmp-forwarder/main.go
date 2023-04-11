@@ -9,6 +9,7 @@ import (
 	db "github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/models"
 	"github.com/johannessarpola/go-network-buffer/serdes"
+	"github.com/johannessarpola/go-network-buffer/utils"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/panjf2000/ants/v2"
 	//"github.com/sirupsen/logrus"
@@ -54,8 +55,20 @@ func process_element(in *models.Element, print bool) {
 func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
 
-	data := db.NewDatabase("../../_tmp", "snmp_") // Will cause conflict probably if run with listener
-	//stream := data.GetOffsettedStream(8, "snmp.Forwarder")
+	idx_fs, err := utils.NewFileStore("../../_idxs")
+	if err != nil {
+		log.Fatal("could not open index filestore")
+	}
+	snmp_fs, err := utils.NewFileStore("../../_snmp")
+	if err != nil {
+		log.Fatal("could not open snmp filestore")
+	}
+
+	defer idx_fs.Close()
+	defer snmp_fs.Close()
+
+	idx_db := db.NewIndexDB(idx_fs)                     // TODO prefix?
+	snmp_data := db.NewSnmpDB(snmp_fs, idx_db, "snmp_") // TODO Configurable prefix
 
 	defer ants.Release()
 	pool, err := ants.NewPool(100)
@@ -65,18 +78,18 @@ func main() {
 	dones := make(chan bool)
 	defer close(dones)
 	go u.MeasureRate(dones)
-	s, _ := data.RingDB.ContentSize()
+	s, _ := snmp_data.Buffer.ContentSize()
 	i := 0
 	fmt.Printf("Total at %d\n", s)
-	d, _ := data.RingDB.Dequeue()
+	d, _ := snmp_data.Buffer.Dequeue()
 	for d != nil {
-		d, _ = data.RingDB.Dequeue()
+		d, _ = snmp_data.Buffer.Dequeue()
 		i++
 		pool.Submit(func() {
 			// TODO Remove
 			if i%5000 == 0 {
 				fmt.Printf("Currently processed %d elements\n", i)
-				cs, _ := data.RingDB.ContentSize()
+				cs, _ := snmp_data.Buffer.ContentSize()
 				fmt.Printf("Offset index at %d\n", cs)
 			}
 			process_element(d, false)

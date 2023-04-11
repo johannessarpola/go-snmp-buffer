@@ -45,7 +45,7 @@ func NewSnmpHandler(gosnmp *g.GoSNMP, out chan<- models.Element) *SnmpHandler {
 	return h
 }
 
-func Start(port int, data *db.Database) {
+func Start(port int, data *db.SnmpDB) {
 	// TODO Cleanup
 	defer ants.Release()
 	ants, err := ants.NewPool(100)
@@ -82,7 +82,7 @@ func Start(port int, data *db.Database) {
 			if err != nil {
 				logger.Error("Could not handle packet", err)
 			} else {
-				data.RingDB.Enqueue(<-rsc)
+				data.Buffer.Enqueue(<-rsc)
 			}
 			dones <- true
 		})

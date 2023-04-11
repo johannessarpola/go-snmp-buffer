@@ -45,5 +45,7 @@ go.work
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode
 _tmp
+_snmp
+_idxs
 .DS_Store
 bins

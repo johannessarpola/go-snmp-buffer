@@ -19,12 +19,10 @@ type RingDB struct {
 	prefix  []byte
 }
 
-func NewRingDB(db *badger.DB, prefix string) *RingDB {
-	store := NewIndexDB(db)
-
+func NewRingDB(fs *badger.DB, idx_db *IndexDB, prefix string) *RingDB {
 	return &RingDB{
-		db:      db,
-		IndexDB: store,
+		db:      fs,
+		IndexDB: idx_db,
 		prefix:  []byte(prefix),
 	}
 }

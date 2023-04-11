@@ -2,18 +2,22 @@ package main
 
 import (
 	"github.com/johannessarpola/go-network-buffer/db"
+	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	var log = logrus.New()
-	folder := "../../_tmp"
-	prefix := "snmp_"
-	log.Info("Starting database service on folder %s with prefix %s", folder, prefix)
-	data := db.NewDatabase(folder, prefix)
 
-	cidx, _ := data.RingDB.IndexDB.GetCurrentIndex()
-	oidx, _ := data.RingDB.IndexDB.GetOffsetIndex()
+	idx_fs, err := utils.NewFileStore("../../_idxs")
+	if err != nil {
+		log.Fatal("could not open index filestore")
+	}
+
+	idx_db := db.NewIndexDB(idx_fs)
+
+	cidx, _ := idx_db.GetCurrentIndex()
+	oidx, _ := idx_db.GetOffsetIndex()
 	log.Infof("Current idx: %d", cidx)
 	log.Infof("Offset idx: %d", oidx)
 }

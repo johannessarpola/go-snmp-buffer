@@ -8,8 +8,8 @@ import (
 // TODO Could be just IndexDB -> Index with ID
 type IndexDB struct {
 	db         *badger.DB
-	cidx_store *IndexStore
-	oidx_store *IndexStore
+	cidx_store *IndexStore // has sync.Mutex
+	oidx_store *IndexStore // has sync.Mutex
 }
 
 func NewIndexDB(db *badger.DB) *IndexDB {
