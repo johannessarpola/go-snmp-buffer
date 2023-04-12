@@ -100,7 +100,7 @@ func fromYaml(fname string) (*V3Config, error) {
 }
 
 func NewV3ConfigFromFile(fname string) (*V3Config, error) {
-	extension := filepath.Ext(fname)
+	extension := strings.ToLower(filepath.Ext(fname))
 	switch extension {
 	case "json":
 		return fromJson(fname)
