@@ -9,14 +9,11 @@
 - add a cli to manage the database
 - improve benchmarking to be more valid
 - Probably could use the inbuilt protobuf (badgerpb) instead of gob
-- you only need to lock(miten) the next idx generation (cur & offs) 
-- have keys in different database and 'service'
 - compare for loop and streams perf with badger
 
 # Minor things to do
 - Limit the trap output to necessary fields
 - [test] Producer needs some variation in the output
-- Listener should be constantly running and listening with a cmd
 - add cli for producer through args etc
 - unify loggers https://stackoverflow.com/questions/29538668/logging-globally-across-packages
 

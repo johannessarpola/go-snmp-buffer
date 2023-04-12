@@ -22,6 +22,7 @@ func main() {
 	}
 	defer g.Default.Conn.Close()
 
+	// TODO Mutation
 	pdu := g.SnmpPDU{
 		Name:  ".1.3.6.1.6.3.1.1.4.1.0",
 		Type:  g.ObjectIdentifier,
