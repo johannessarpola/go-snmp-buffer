@@ -35,21 +35,21 @@ func parseAuth(authprotocol string) g.SnmpV3AuthProtocol {
 			SHA512 SnmpV3AuthProtocol = 7
 		)
 	*/
-	s := strings.Replace(authprotocol, "-", "", -1)
+	s := strings.ToLower(strings.Replace(authprotocol, "-", "", -1))
 	switch s {
-	case "noauth", "NoAuth", "noAuth":
+	case "noauth":
 		return g.NoAuth
-	case "md5", "MD5":
+	case "md5":
 		return g.MD5
-	case "sha", "SHA":
+	case "sha":
 		return g.SHA
-	case "sha224", "SHA224":
+	case "sha224":
 		return g.SHA224
-	case "sha256", "SHA256":
+	case "sha256":
 		return g.SHA256
-	case "sha384", "SHA384":
+	case "sha384":
 		return g.SHA384
-	case "sha512", "SHA512":
+	case "sha512":
 		return g.SHA512
 	default:
 		return g.SHA512
@@ -68,22 +68,24 @@ func parsePriv(privprotocol string) g.SnmpV3PrivProtocol {
 			AES256C SnmpV3PrivProtocol = 7 // Reeder-AES256
 		)
 	*/
-	s := strings.Replace(privprotocol, "-", "", -1)
+	s := strings.ToLower(strings.Replace(privprotocol, "-", "", -1))
 	switch s {
-	case "nopriv", "NoPriv", "noPriv":
+	case "nopriv":
 		return g.NoPriv
-	case "des", "DES":
+	case "des":
 		return g.DES
-	case "aes", "AES":
+	case "aes":
 		return g.AES
-	case "aes192", "AES192":
+	case "aes192":
 		return g.AES192
-	case "aes256", "AES256":
+	case "aes256":
 		return g.AES256
-	case "aes192c", "AES192C":
+	case "aes192c":
 		return g.AES192C
-	case "aes256c", "AES256C":
+	case "aes256c":
 		return g.AES256C
+	default:
+		return g.AES256
 	}
 }
 
