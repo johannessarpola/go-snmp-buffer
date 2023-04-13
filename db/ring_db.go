@@ -41,10 +41,14 @@ func (data *RingDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 			logger.Errorf("Could not get element for %d", idx)
 		}
 		if item != nil {
-			item.Value(func(val []byte) error {
+			err = item.Value(func(val []byte) error {
 				m.Value = val
 				return nil
 			})
+			if err != nil {
+				logger.Error("Could not set value")
+				return err
+			}
 		}
 		return err
 	})
@@ -84,8 +88,11 @@ func (data *RingDB) Enqueue(v models.Element) error {
 
 		arr := utils.ConvertToByteArr(idx)
 		k := data.prefixed_arr(arr)
-		txn.Set(k, v.Value)
-		return nil // TODO
+		err := txn.Set(k, v.Value)
+		if err != nil {
+			logger.Error("Could not set value", err)
+		}
+		return err
 	})
 
 }

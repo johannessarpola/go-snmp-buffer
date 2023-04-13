@@ -82,7 +82,10 @@ func Start(port int, data *db.SnmpDB) {
 			if err != nil {
 				logger.Error("Could not handle packet", err)
 			} else {
-				data.Buffer.Enqueue(<-rsc)
+				err := data.Buffer.Enqueue(<-rsc)
+				if err != nil {
+					logger.Error("Could not enqueue packet")
+				}
 			}
 			dones <- true
 		})

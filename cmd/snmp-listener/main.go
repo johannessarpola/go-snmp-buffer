@@ -27,14 +27,14 @@ func main() {
 	var log = logrus.New()
 
 	port := 9999
-	log.Info("Starting snmp listener at port %s", port)
+	log.Infof("Starting snmp listener at port %d", port)
 	idx_fs, err := utils.NewFileStore("../../_idxs")
 	if err != nil {
-		log.Fatal("could not open index filestore")
+		log.Fatalf("could not open index filestore")
 	}
 	snmp_fs, err := utils.NewFileStore("../../_snmp")
 	if err != nil {
-		log.Fatal("could not open snmp filestore")
+		log.Fatalf("could not open snmp filestore")
 	}
 
 	defer idx_fs.Close()  // TODO Handle these more cleanly

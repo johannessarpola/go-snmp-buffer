@@ -16,7 +16,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/snmp-producer/main.go"
+            "program": "${workspaceFolder}/cmd/snmp-producer-v2/main.go"
         },
         {
             "name": "Launch Forwarder",

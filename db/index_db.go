@@ -26,7 +26,7 @@ func NewIndexDB(db *badger.DB) *IndexDB {
 
 func get_and_increment(idx *IndexStore) (uint64, error) {
 	nbr, err := idx.GetNbr()
-	idx.Increment()
+	_, _ = idx.Increment()
 	return nbr, err
 }
 

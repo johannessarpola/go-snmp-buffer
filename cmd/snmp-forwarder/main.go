@@ -85,7 +85,7 @@ func main() {
 	for d != nil {
 		d, _ = snmp_data.Buffer.Dequeue()
 		i++
-		pool.Submit(func() {
+		err := pool.Submit(func() {
 			// TODO Remove
 			if i%5000 == 0 {
 				fmt.Printf("Currently processed %d elements\n", i)
@@ -95,6 +95,9 @@ func main() {
 			process_element(d, false)
 			dones <- true
 		})
+		if err != nil {
+			log.Fatal("Could not submit into pool", err)
+		}
 
 	}
 

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"strings"
 
@@ -21,6 +22,34 @@ type V3Config struct {
 	Priv     Priv   `json:"priv"`
 	Engineid string `json:"engineid"`
 	Username string `json:"username"`
+}
+
+func (a *Auth) UnmarshalJSON(data []byte) error {
+
+	var v []interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	s, _ := v[0].(string)
+	a.Protocol = parseAuth(s)
+	a.Pass, _ = v[1].(string)
+
+	return nil
+}
+
+func (a *Priv) UnmarshalJSON(data []byte) error {
+
+	var v []interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+
+	s, _ := v[0].(string)
+	a.Protocol = parsePriv(s)
+	a.Pass, _ = v[1].(string)
+
+	return nil
 }
 
 func parseAuth(authprotocol string) g.SnmpV3AuthProtocol {

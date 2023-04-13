@@ -49,3 +49,6 @@ _snmp
 _idxs
 .DS_Store
 bins
+vendor
+*.cov
+out

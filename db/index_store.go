@@ -31,12 +31,15 @@ func (store *IndexStore) init_index(idx *m.Index) {
 		item, err := txn.Get(idx.KeyAsBytes())
 
 		if err == nil {
-			item.Value(func(val []byte) error {
+			err = item.Value(func(val []byte) error {
 				n := u.ConvertToUint64(val)
 				logger.Infof("Value exists, setting %s from db to %d", idx.Name, n)
 				idx.SetValue(n)
 				return nil
 			})
+			if err != nil {
+				logger.Error("Could not set value", err)
+			}
 		} else {
 			logger.Infof("Value does not exist, setting %s to 0", idx.Name)
 		}
