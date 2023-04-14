@@ -30,7 +30,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/admin/main.go"
+            "program": "${workspaceFolder}/cmd/cli/main.go"
         },
         {
             "name": "Launch Admin CLI [list indexes]",
