@@ -5,6 +5,7 @@ import (
 	m "github.com/johannessarpola/go-network-buffer/models"
 )
 
+// TODO Use array
 type IndexDB struct {
 	db         *badger.DB
 	cidx_store *IndexStore // has sync.Mutex
