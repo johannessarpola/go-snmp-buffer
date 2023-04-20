@@ -1,0 +1,5 @@
+#server:
+#  host: "localhost"
+#  port: 9999
+data: ../../_idxs # TODO Placeholders for now
+index: current_idx # TODO Placeholders for now

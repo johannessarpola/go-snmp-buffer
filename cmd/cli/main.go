@@ -1,7 +1,7 @@
 package main
 
-import "github.com/johannessarpola/go-network-buffer/cli/admin"
+import "github.com/johannessarpola/go-network-buffer/cli"
 
 func main() {
-	admin.Execute()
+	cli.Execute()
 }

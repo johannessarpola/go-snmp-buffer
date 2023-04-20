@@ -1,9 +1,14 @@
-package admin
+package index
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/dgraph-io/badger/v4"
+	"github.com/johannessarpola/go-network-buffer/db"
+	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var getCmd = &cobra.Command{
@@ -12,6 +17,34 @@ var getCmd = &cobra.Command{
 	Short:   "gets index",
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Get idx")
+		fmt.Println("--- get index from database")
+		index := utils.GetFlagOrConf(cmd, "index")
+		path := utils.GetDataFromFlagOrConf(cmd)
+		fmt.Printf("Listing indexes in database: %s\n", path)
+		get_idx(path, index)
 	},
+}
+
+func init() {
+	getCmd.PersistentFlags().StringP("index", "i", viper.GetString("index"), "index name to delete")
+	viper.BindPFlag("index", deleteCmd.PersistentFlags().Lookup("index"))
+}
+
+func get_idx(path string, key string) {
+	if len(key) == 0 {
+		fmt.Println("Please provide a key for index")
+	} else {
+		fmt.Printf("Get index %s\n", key)
+		err := db.WithDatabase(path, func(d *badger.DB) error {
+			idx, err := db.GetIndex(d, []byte(key))
+			if err != nil {
+				log.Fatal("Could not get index from database")
+			}
+			fmt.Printf("Index: %s with value %d\n", idx.Name, idx.Value)
+			return err
+		})
+		if err != nil {
+			log.Fatal("Could not get index from database")
+		}
+	}
 }

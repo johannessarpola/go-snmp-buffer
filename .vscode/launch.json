@@ -39,6 +39,22 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/cli/main.go",
             "args": ["index", "list"]
+        },
+        {
+            "name": "Launch Admin CLI [get index]",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/cli/main.go",
+            "args": ["index", "g"]
+        },
+        {
+            "name": "Launch Admin CLI [get offset_idx]",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/cli/main.go",
+            "args": ["index", "g", "-i", "offset_idx"]
         }
     ]
 }

@@ -1,9 +1,10 @@
-package admin
+package index
 
 import (
 	"fmt"
 	"log"
 
+	"github.com/dgraph-io/badger/v4"
 	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
@@ -16,21 +17,21 @@ var listCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Indexes in database: ")
-		list_indexes("../../_idxs")
+		path := utils.GetDataFromFlagOrConf(cmd)
+		fmt.Printf("Listing indexes in database: %s\n", path)
+		db.WithDatabase(path, cli_list_idx)
 	},
 }
 
-// "../../_idxs"
-func list_indexes(path string) {
-	fs, err := utils.NewFileStore(path)
+func cli_list_idx(dbi *badger.DB) error {
+	c, err := db.ListIndexes(dbi)
 	if err != nil {
-		log.Fatal("could not open index filestore")
+		log.Fatal("Error with listing", err)
 	}
-
-	c := db.ListIndexes(fs)
 	for _, idx := range c {
 		if idx != nil {
 			fmt.Printf("Index: %s with value %d\n", idx.Name, idx.Value)
 		}
 	}
+	return nil
 }
