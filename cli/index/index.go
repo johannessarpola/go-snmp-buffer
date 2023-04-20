@@ -22,6 +22,7 @@ func init() {
 	viper.BindPFlag("data", IndexCmd.PersistentFlags().Lookup("data"))
 
 	IndexCmd.AddCommand(getCmd)
+	IndexCmd.AddCommand(setCmd)
 	IndexCmd.AddCommand(listCmd)
 	IndexCmd.AddCommand(deleteCmd)
 }
