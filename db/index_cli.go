@@ -50,6 +50,21 @@ func GetIndex(db *badger.DB, key []byte) (*m.Index, error) {
 	return idx, err
 }
 
+func SetIndexUint(db *badger.DB, key []byte, value uint64) error {
+	return SetIndex(db, key, u.ConvertToByteArr(value))
+}
+
+func SetIndex(db *badger.DB, key []byte, value []byte) error {
+	return db.Update(func(txn *badger.Txn) error {
+		i, err := txn.Get(key)
+		// Set should not create new index
+		if i != nil {
+			return txn.Set(key, value)
+		}
+		return err
+	})
+}
+
 func DeleteIndex(db *badger.DB, key []byte) error {
 	return db.Update(func(txn *badger.Txn) error {
 		return txn.Delete(key)

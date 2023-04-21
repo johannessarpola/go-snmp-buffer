@@ -18,7 +18,7 @@ var getCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("--- get index from database")
-		index := utils.GetFlagOrConf(cmd, "index")
+		index := utils.GetFlagOrConfString(cmd, "index")
 		path := utils.GetDataFromFlagOrConf(cmd)
 		fmt.Printf("Gets index from database: %s\n", path)
 		get_idx(path, index)

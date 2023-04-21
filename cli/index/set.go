@@ -2,7 +2,10 @@ package index
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/dgraph-io/badger/v4"
+	"github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,34 +18,37 @@ var setCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("--- get index from database")
-		index := utils.GetFlagOrConf(cmd, "index")
+		index := utils.GetFlagOrConfString(cmd, "index")
+		val := utils.GetFlagOrConfUint(cmd, "value")
 		path := utils.GetDataFromFlagOrConf(cmd)
 		fmt.Printf("Sets index in database: %s\n", path)
-		set_idx(path, index)
+		set_idx(path, index, val)
 	},
 }
 
 func init() {
-	getCmd.PersistentFlags().StringP("index", "i", viper.GetString("index"), "index name to set")
-	getCmd.PersistentFlags().Int64P("value", "v", viper.GetInt64("value"), "Value to set the index to")
+	setCmd.PersistentFlags().StringP("index", "i", viper.GetString("index"), "index name to set")
+	setCmd.PersistentFlags().Uint64P("value", "v", viper.GetUint64("value"), "Value to set the index to")
 	viper.BindPFlag("index", deleteCmd.PersistentFlags().Lookup("index"))
 }
 
-func set_idx(path string, key string) {
-	// if len(key) == 0 {
-	// 	fmt.Println("Please provide a key for index")
-	// } else {
-	// 	fmt.Printf("Get index %s\n", key)
-	// 	err := db.WithDatabase(path, func(d *badger.DB) error {
-	// 		idx, err := db.GetIndex(d, []byte(key))
-	// 		if err != nil {
-	// 			log.Fatal("Could not get index from database")
-	// 		}
-	// 		fmt.Printf("Index: %s with value %d\n", idx.Name, idx.Value)
-	// 		return err
-	// 	})
-	// 	if err != nil {
-	// 		log.Fatal("Could not get index from database")
-	// 	}
-	// }
+func set_idx(path string, key string, value uint64) {
+
+	if len(key) == 0 {
+		fmt.Println("Please provide a key for index")
+	} else {
+		err := db.WithDatabase(path, func(d *badger.DB) error {
+			fmt.Printf("Setting index %s to %d\n", key, value)
+			err := db.SetIndexUint(d, []byte(key), value)
+			if err != nil {
+				log.Fatal("Could not set index", err)
+			}
+			idx, _ := db.GetIndex(d, []byte(key)) // If it doesn't exist it should already return error in Set
+			fmt.Printf("New for index %s is %d", idx.Name, idx.Value)
+			return nil
+		})
+		if err != nil {
+			log.Fatal("Could not set index from database")
+		}
+	}
 }

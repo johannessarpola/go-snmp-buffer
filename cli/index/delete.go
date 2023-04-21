@@ -17,7 +17,7 @@ var deleteCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read the values from the configuration file (if not overridden by input arguments)
-		index := utils.GetFlagOrConf(cmd, "index")
+		index := utils.GetFlagOrConfString(cmd, "index")
 		path := utils.GetDataFromFlagOrConf(cmd)
 		delete_idx(path, index) // TODO Index from parent
 	},
