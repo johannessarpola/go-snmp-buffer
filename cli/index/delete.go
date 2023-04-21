@@ -12,7 +12,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:     "delete",
-	Aliases: []string{"l"},
+	Aliases: []string{"d"},
 	Short:   "deletes idx",
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

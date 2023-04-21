@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
@@ -48,6 +50,21 @@ func GetIndex(db *badger.DB, key []byte) (*m.Index, error) {
 		return err
 	})
 	return idx, err
+}
+
+func CreateIndex(db *badger.DB, key []byte) error {
+	return db.Update(func(txn *badger.Txn) error {
+		i, err := txn.Get(key)
+		// it should not override index
+		if i == nil && err != nil {
+			init := uint64(0)
+			return txn.Set(key, u.ConvertToByteArr(init))
+		} else if i != nil {
+			return errors.New("index exists")
+		} else {
+			return err
+		}
+	})
 }
 
 func SetIndexUint(db *badger.DB, key []byte, value uint64) error {
