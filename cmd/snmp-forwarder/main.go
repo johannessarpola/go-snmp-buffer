@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
-	g "github.com/gosnmp/gosnmp"
 	db "github.com/johannessarpola/go-network-buffer/db"
 	"github.com/johannessarpola/go-network-buffer/models"
 	"github.com/johannessarpola/go-network-buffer/serdes"
@@ -16,25 +14,6 @@ import (
 )
 
 //var logger = logrus.New()
-
-func handle_var(variable g.SnmpPDU) {
-	fmt.Printf("oid: %s ", variable.Name)
-
-	switch variable.Type {
-	case g.OctetString:
-		bytes := variable.Value.([]byte)
-		fmt.Printf("string: %s\n", string(bytes))
-	case g.TimeTicks:
-		n := g.ToBigInt(variable.Value)
-		tm := time.Unix(n.Int64(), 0)
-		fmt.Printf("time: %s\n", tm.String())
-	default:
-		// ... or often you're just interested in numeric values.
-		// ToBigInt() will return the Value as a BigInt, for plugging
-		// into your calculations.
-		fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
-	}
-}
 
 func process_element(in *models.Element, print bool) {
 	decoded, err := serdes.Decode(in.Value)
@@ -47,7 +26,7 @@ func process_element(in *models.Element, print bool) {
 	}
 	for _, variable := range decoded.Variables {
 		if print {
-			handle_var(variable)
+			u.PrintVars(variable)
 		}
 	}
 }

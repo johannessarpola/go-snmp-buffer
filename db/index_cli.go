@@ -87,12 +87,3 @@ func DeleteIndex(db *badger.DB, key []byte) error {
 		return txn.Delete(key)
 	})
 }
-
-func WithDatabase(folder string, fun func(*badger.DB) error) error {
-	db, err := u.NewFileStore(folder)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	return fun(db)
-}

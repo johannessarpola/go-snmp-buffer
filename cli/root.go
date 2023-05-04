@@ -5,6 +5,7 @@ import (
 	"os"
 
 	i "github.com/johannessarpola/go-network-buffer/cli/index"
+	s "github.com/johannessarpola/go-network-buffer/cli/snmp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -37,6 +38,7 @@ func init() {
 	}
 
 	rootCmd.AddCommand(i.IndexCmd)
+	rootCmd.AddCommand(s.SnmpCmd)
 }
 
 func Execute() {
