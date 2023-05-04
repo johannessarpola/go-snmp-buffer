@@ -13,6 +13,11 @@ type PacketSubset interface {
 	Variables() []Variable
 }
 
+type StoredPacket struct {
+	Key    string
+	Packet Packet
+}
+
 type Packet struct {
 	Version            g.SnmpVersion
 	MsgFlags           g.SnmpV3MsgFlags

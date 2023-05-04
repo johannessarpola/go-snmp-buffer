@@ -6,7 +6,7 @@ import (
 	s "github.com/johannessarpola/go-network-buffer/serdes"
 )
 
-func LastN(db *badger.DB, dst []m.Packet) error {
+func LastN(db *badger.DB, dst []m.StoredPacket) error {
 
 	n := len(dst)
 	i := 0
@@ -26,7 +26,10 @@ func LastN(db *badger.DB, dst []m.Packet) error {
 				decoded, err := s.Decode(val)
 
 				if err == nil {
-					dst[i] = decoded
+					dst[i] = m.StoredPacket{
+						Key:    string(k),
+						Packet: decoded,
+					}
 				}
 				i++
 
@@ -36,9 +39,4 @@ func LastN(db *badger.DB, dst []m.Packet) error {
 		return nil
 	})
 	return err
-}
-
-func Last10(db *badger.DB) ([]m.Packet, error) {
-	arr := make([]m.Packet, 10)
-	return arr, LastN(db, arr)
 }

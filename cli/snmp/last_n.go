@@ -37,15 +37,21 @@ func init() {
 }
 
 func last_n(path string, n int) {
-	arr := make([]m.Packet, n)
+	arr := make([]m.StoredPacket, n)
 
 	db.WithDatabase(path, func(d *badger.DB) error {
 		return db.LastN(d, arr)
 	})
 
-	for i, pckt := range arr {
-		fmt.Printf("Trap: %d -----\n", i)
-		output_trap(&pckt)
+	// TODO handle prefix better (store config)
+	const prefix string = "snmp_"
+
+	for i, spckt := range arr {
+		idx_arr := spckt.Key[len(prefix):]                                                                   // TODO Cleanup
+		pretty_k := fmt.Sprintf("%s%d", string(spckt.Key[:len(prefix)]), u.ConvertToUint64([]byte(idx_arr))) // TODO Cleanup
+
+		fmt.Printf("Trap: %d (%s)-----\n", i, pretty_k)
+		output_trap(&spckt.Packet)
 	}
 
 }
