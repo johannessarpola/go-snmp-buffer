@@ -59,7 +59,7 @@ func PrintVars(variable g.SnmpPDU) {
 	}
 }
 
-func PrettyPrintSnmpKey(b []byte, prefix_len int) string {
+func PrettyPrintPrefixedKey(b []byte, prefix_len int) string {
 	prefix := string(b[:prefix_len])
 	idx_arr := b[prefix_len:]
 	idx := ConvertToUint64(idx_arr)

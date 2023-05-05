@@ -47,9 +47,7 @@ func last_n(path string, n int) {
 	const prefix string = "snmp_"
 
 	for i, spckt := range arr {
-		idx_arr := spckt.Key[len(prefix):]                                                                   // TODO Cleanup
-		pretty_k := fmt.Sprintf("%s%d", string(spckt.Key[:len(prefix)]), u.ConvertToUint64([]byte(idx_arr))) // TODO Cleanup
-
+		pretty_k := u.PrettyPrintPrefixedKey([]byte(spckt.Key), len(prefix))
 		fmt.Printf("Trap: %d (%s)-----\n", i, pretty_k)
 		output_trap(&spckt.Packet)
 	}

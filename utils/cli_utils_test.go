@@ -15,7 +15,7 @@ func TestPrettyPrintSnmpKey_1(t *testing.T) {
 
 	k := append(pfa[:], idxa...)
 
-	rs := PrettyPrintSnmpKey([]byte(k), len(pf))
+	rs := PrettyPrintPrefixedKey([]byte(k), len(pf))
 
 	if rs != s {
 		t.Error("Invalid key returned")
@@ -33,7 +33,7 @@ func TestPrettyPrintSnmpKey_2(t *testing.T) {
 		k := append(pfa[:], idxa...)
 
 		s := fmt.Sprintf("%s%d", pf, idx)
-		rs := PrettyPrintSnmpKey([]byte(k), len(pf))
+		rs := PrettyPrintPrefixedKey([]byte(k), len(pf))
 		if rs != s {
 			t.Error("Invalid key returned")
 		}
