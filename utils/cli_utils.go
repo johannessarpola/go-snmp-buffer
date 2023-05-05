@@ -58,3 +58,11 @@ func PrintVars(variable g.SnmpPDU) {
 		fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
 	}
 }
+
+func PrettyPrintSnmpKey(b []byte, prefix_len int) string {
+	prefix := string(b[:prefix_len])
+	idx_arr := b[prefix_len:]
+	idx := ConvertToUint64(idx_arr)
+	pretty_k := fmt.Sprintf("%s%d", prefix, idx)
+	return pretty_k
+}
