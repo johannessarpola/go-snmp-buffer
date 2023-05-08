@@ -4,9 +4,8 @@ import (
 	"fmt"
 
 	"github.com/dgraph-io/badger/v4"
-	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
-	db "github.com/johannessarpola/go-network-buffer/pkg/index_db"
-	"github.com/johannessarpola/go-network-buffer/utils"
+	u "github.com/johannessarpola/go-network-buffer/internal/cli/utils"
+	db "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,8 +17,8 @@ var deleteCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read the values from the configuration file (if not overridden by input arguments)
-		index := utils.GetFlagOrConfString(cmd, "index")
-		path := utils.GetDataFromFlagOrConf(cmd)
+		index := u.GetFlagOrConfString(cmd, "index")
+		path := u.GetDataFromFlagOrConf(cmd)
 		delete_idx(path, index) // TODO Index from parent
 	},
 }
@@ -37,7 +36,7 @@ func delete_idx(path string, key string) {
 		fmt.Println("Please provide a key for index")
 	} else {
 		fmt.Printf("Deleting index %s\n", key)
-		c.WithDatabase(path, func(d *badger.DB) error {
+		u.WithDatabase(path, func(d *badger.DB) error {
 			return db.DeleteIndex(d, []byte(key))
 		})
 	}

@@ -1,4 +1,4 @@
-package utils
+package badgerutils
 
 import (
 	"github.com/dgraph-io/badger/v4"

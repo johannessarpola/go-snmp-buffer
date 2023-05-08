@@ -5,9 +5,8 @@ import (
 	"log"
 
 	"github.com/dgraph-io/badger/v4"
-	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
-	db "github.com/johannessarpola/go-network-buffer/pkg/index_db"
-	"github.com/johannessarpola/go-network-buffer/utils"
+	u "github.com/johannessarpola/go-network-buffer/internal/cli/utils"
+	db "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -17,8 +16,8 @@ var createCmd = &cobra.Command{
 	Aliases: []string{"c"},
 	Short:   "creates index",
 	Run: func(cmd *cobra.Command, args []string) {
-		index := utils.GetFlagOrConfString(cmd, "index")
-		path := utils.GetDataFromFlagOrConf(cmd)
+		index := u.GetFlagOrConfString(cmd, "index")
+		path := u.GetDataFromFlagOrConf(cmd)
 		fmt.Printf("Sets index in database: %s\n", path)
 		create_idx(path, index)
 	},
@@ -33,7 +32,7 @@ func create_idx(path string, key string) {
 	if len(key) == 0 {
 		fmt.Println("Please provide a key for index")
 	} else {
-		err := c.WithDatabase(path, func(d *badger.DB) error {
+		err := u.WithDatabase(path, func(d *badger.DB) error {
 			fmt.Printf("Creating index %s\n", key)
 			err := db.CreateIndex(d, []byte(key))
 			if err != nil {

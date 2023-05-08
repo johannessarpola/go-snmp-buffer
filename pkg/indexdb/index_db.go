@@ -1,4 +1,4 @@
-package index_db
+package indexdb
 
 import (
 	"github.com/dgraph-io/badger/v4"

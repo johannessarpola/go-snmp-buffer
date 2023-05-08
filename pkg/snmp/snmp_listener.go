@@ -4,15 +4,16 @@ import (
 	"net"
 
 	g "github.com/gosnmp/gosnmp"
+	m "github.com/johannessarpola/go-network-buffer/pkg/metrics"
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
-	s "github.com/johannessarpola/go-network-buffer/pkg/snmp_db"
-	u "github.com/johannessarpola/go-network-buffer/utils"
+	s "github.com/johannessarpola/go-network-buffer/pkg/snmpdb"
 	"github.com/panjf2000/ants/v2"
 	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.New()
 
+// TODO Rename to be more clear and not snmp.Start()
 func Start(port int, data *s.SnmpDB) {
 	// TODO Cleanup
 	defer ants.Release()
@@ -34,7 +35,7 @@ func Start(port int, data *s.SnmpDB) {
 	var buf [4096]byte
 	dones := make(chan bool)
 	defer close(dones)
-	go u.MeasureRate(dones)
+	go m.MeasureRate(dones)
 	for {
 		rlen, _, err := conn.ReadFromUDP(buf[:])
 		if err != nil {
@@ -50,7 +51,7 @@ func Start(port int, data *s.SnmpDB) {
 			if err != nil {
 				logger.Error("Could not handle packet", err)
 			} else {
-				err := data.Buffer.Enqueue(<-rsc)
+				err := data.Enqueue(<-rsc)
 				if err != nil {
 					logger.Error("Could not enqueue packet")
 				}

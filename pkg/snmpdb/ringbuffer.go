@@ -1,4 +1,4 @@
-package snmp_db
+package snmpdb
 
 type RingBuffer interface {
 	/*

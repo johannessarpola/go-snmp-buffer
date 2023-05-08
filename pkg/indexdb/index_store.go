@@ -1,12 +1,12 @@
-package index_db
+package indexdb
 
 import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v4"
+	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
 	_ "github.com/johannessarpola/go-network-buffer/pkg/logging"
 	m "github.com/johannessarpola/go-network-buffer/pkg/models"
-	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +34,7 @@ func (store *IndexStore) init_index(idx *m.Index) {
 
 		if err == nil {
 			err = item.Value(func(val []byte) error {
-				n := u.ConvertToUint64(val)
+				n := c.ConvertToUint64(val)
 				logrus.Infof("Value exists, setting %s from db to %d", idx.Name, n)
 				idx.SetValue(n)
 				return nil
@@ -69,7 +69,7 @@ func (data *IndexStore) Set(newval uint64) error {
 	defer data.Unlock()
 
 	return data.db.Update(func(txn *badger.Txn) error {
-		return txn.Set(data.idx.KeyAsBytes(), u.ConvertToByteArr(newval))
+		return txn.Set(data.idx.KeyAsBytes(), c.ConvertToByteArr(newval))
 	})
 }
 
@@ -99,7 +99,7 @@ func (data *IndexStore) Get() (*m.Index, error) {
 
 		return item.Value(func(val []byte) error {
 			// Set the structs value from the one in db
-			data.idx.SetValue(u.ConvertToUint64(val))
+			data.idx.SetValue(c.ConvertToUint64(val))
 			return nil
 		})
 	})

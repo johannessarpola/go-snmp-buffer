@@ -1,4 +1,4 @@
-package snmp_db
+package snmpdb
 
 import (
 	"github.com/dgraph-io/badger/v4"

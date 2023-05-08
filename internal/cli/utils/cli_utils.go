@@ -5,6 +5,7 @@ import (
 	"time"
 
 	g "github.com/gosnmp/gosnmp"
+	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -62,7 +63,7 @@ func PrintVars(variable g.SnmpPDU) {
 func PrettyPrintPrefixedKey(b []byte, prefix_len int) string {
 	prefix := string(b[:prefix_len])
 	idx_arr := b[prefix_len:]
-	idx := ConvertToUint64(idx_arr)
+	idx := c.ConvertToUint64(idx_arr)
 	pretty_k := fmt.Sprintf("%s%d", prefix, idx)
 	return pretty_k
 }

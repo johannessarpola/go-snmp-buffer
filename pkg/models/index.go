@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/johannessarpola/go-network-buffer/utils"
+	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
 )
 
 type Index struct {
@@ -35,7 +35,7 @@ func (idx *Index) KeyAsBytes() []byte {
 }
 
 func (idx *Index) ValueAsBytes() []byte {
-	return utils.ConvertToByteArr(idx.Value)
+	return c.ConvertToByteArr(idx.Value)
 }
 
 func (idx *Index) WithValue(value uint64) *Index {

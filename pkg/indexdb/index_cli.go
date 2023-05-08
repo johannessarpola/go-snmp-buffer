@@ -1,15 +1,15 @@
-package index_db
+package indexdb
 
 import (
 	"errors"
 
 	"github.com/dgraph-io/badger/v4"
+	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
 	m "github.com/johannessarpola/go-network-buffer/pkg/models"
-	u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
 func IndexFrom(k []byte, v []byte) m.Index {
-	return m.NewIndex(string(k), u.ConvertToUint64(v))
+	return m.NewIndex(string(k), c.ConvertToUint64(v))
 }
 
 func ListIndexes(db *badger.DB) ([]*m.Index, error) {
@@ -43,7 +43,7 @@ func GetIndex(db *badger.DB, key []byte) (*m.Index, error) {
 		itm.Value(func(val []byte) error {
 			idx = &m.Index{
 				Name:  string(itm.Key()),
-				Value: u.ConvertToUint64(val),
+				Value: c.ConvertToUint64(val),
 			}
 			return nil
 		})
@@ -58,7 +58,7 @@ func CreateIndex(db *badger.DB, key []byte) error {
 		// it should not override index
 		if i == nil && err != nil {
 			init := uint64(0)
-			return txn.Set(key, u.ConvertToByteArr(init))
+			return txn.Set(key, c.ConvertToByteArr(init))
 		} else if i != nil {
 			return errors.New("index exists")
 		} else {
@@ -68,7 +68,7 @@ func CreateIndex(db *badger.DB, key []byte) error {
 }
 
 func SetIndex(db *badger.DB, key []byte, value uint64) error {
-	return set_idx(db, key, u.ConvertToByteArr(value))
+	return set_idx(db, key, c.ConvertToByteArr(value))
 }
 
 func set_idx(db *badger.DB, key []byte, value []byte) error {

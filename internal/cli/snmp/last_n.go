@@ -4,10 +4,9 @@ import (
 	"fmt"
 
 	"github.com/dgraph-io/badger/v4"
-	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
+	c "github.com/johannessarpola/go-network-buffer/internal/cli/utils"
 	m "github.com/johannessarpola/go-network-buffer/pkg/models"
-	db "github.com/johannessarpola/go-network-buffer/pkg/snmp_db"
-	u "github.com/johannessarpola/go-network-buffer/utils"
+	db "github.com/johannessarpola/go-network-buffer/pkg/snmpdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -21,9 +20,9 @@ var lastnCmd = &cobra.Command{
 	Short:   "latest n traps",
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		path := u.GetDataFromFlagOrConf(cmd)
+		path := c.GetDataFromFlagOrConf(cmd)
 		fmt.Printf("Listing snmp data from database: %s\n", path)
-		n := u.GetFlagOrConfInt(cmd, number)
+		n := c.GetFlagOrConfInt(cmd, number)
 		last_n(path, n)
 
 	},
@@ -48,7 +47,7 @@ func last_n(path string, n int) {
 	const prefix string = "snmp_"
 
 	for i, spckt := range arr {
-		pretty_k := u.PrettyPrintPrefixedKey([]byte(spckt.Key), len(prefix))
+		pretty_k := c.PrettyPrintPrefixedKey([]byte(spckt.Key), len(prefix))
 		fmt.Printf("Trap: %d (%s)-----\n", i, pretty_k)
 		output_trap(&spckt.Packet)
 	}
@@ -58,7 +57,7 @@ func last_n(path string, n int) {
 func output_trap(p *m.Packet) {
 	fmt.Printf("community: %s\n", p.Community)
 	for _, v := range p.Variables {
-		u.PrintVars(v)
+		c.PrintVars(v)
 	}
 
 }

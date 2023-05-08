@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/johannessarpola/go-network-buffer/db"
-	"github.com/johannessarpola/go-network-buffer/listener"
-	"github.com/johannessarpola/go-network-buffer/utils"
+	bu "github.com/johannessarpola/go-network-buffer/pkg/badgerutils"
+	idb "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
+	s "github.com/johannessarpola/go-network-buffer/pkg/snmp"
+	sdb "github.com/johannessarpola/go-network-buffer/pkg/snmpdb"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,11 +29,11 @@ func main() {
 
 	port := 9999
 	log.Infof("Starting snmp listener at port %d", port)
-	idx_fs, err := utils.NewFileStore("../../_idxs")
+	idx_fs, err := bu.NewFileStore("../../_idxs")
 	if err != nil {
 		log.Fatalf("could not open index filestore")
 	}
-	snmp_fs, err := utils.NewFileStore("../../_snmp")
+	snmp_fs, err := bu.NewFileStore("../../_snmp")
 	if err != nil {
 		log.Fatalf("could not open snmp filestore")
 	}
@@ -40,8 +41,8 @@ func main() {
 	defer idx_fs.Close()  // TODO Handle these more cleanly
 	defer snmp_fs.Close() // TODO Handle these more cleanly
 
-	idx_db := db.NewIndexDB(idx_fs)                     // TODO prefix?
-	snmp_data := db.NewSnmpDB(snmp_fs, idx_db, "snmp_") // TODO Configurable prefix
+	idx_db := idb.NewIndexDB(idx_fs)                     // TODO prefix?
+	snmp_data := sdb.NewSnmpDB(snmp_fs, idx_db, "snmp_") // TODO Configurable prefix
 
-	listener.Start(port, snmp_data)
+	s.Start(port, snmp_data)
 }

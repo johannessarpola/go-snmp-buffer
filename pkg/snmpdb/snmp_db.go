@@ -1,13 +1,13 @@
-package snmp_db
+package snmpdb
 
 import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v4"
-	i "github.com/johannessarpola/go-network-buffer/pkg/index_db"
+	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
+	i "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
 	_ "github.com/johannessarpola/go-network-buffer/pkg/logging"
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
-	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +34,7 @@ func (data *ringDB) prefixed_arr(key []byte) []byte {
 func (data *ringDB) get_prefixed_element(idx uint64) (*models.Element, error) {
 	m := models.EmptyElement()
 	err := data.db.View(func(txn *badger.Txn) error {
-		barr := u.ConvertToByteArr(idx)
+		barr := c.ConvertToByteArr(idx)
 		k := data.prefixed_arr(barr)
 		item, err := txn.Get(k)
 		if err != nil {
@@ -86,7 +86,7 @@ func (data *ringDB) Enqueue(v models.Element) error {
 	logrus.Infof("current idx: %d", idx)
 	return data.db.Update(func(txn *badger.Txn) error {
 
-		arr := u.ConvertToByteArr(idx)
+		arr := c.ConvertToByteArr(idx)
 		k := data.prefixed_arr(arr)
 		err := txn.Set(k, v.Value)
 		if err != nil {
