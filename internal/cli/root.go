@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	i "github.com/johannessarpola/go-network-buffer/cli/index"
-	s "github.com/johannessarpola/go-network-buffer/cli/snmp"
+	i "github.com/johannessarpola/go-network-buffer/internal/cli/index"
+	s "github.com/johannessarpola/go-network-buffer/internal/cli/snmp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

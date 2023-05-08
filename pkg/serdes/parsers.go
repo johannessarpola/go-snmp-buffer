@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	"github.com/johannessarpola/go-network-buffer/models"
+	"github.com/johannessarpola/go-network-buffer/pkg/models"
 )
 
 func Decode(arr []byte) (models.Packet, error) {

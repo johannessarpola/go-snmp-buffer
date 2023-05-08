@@ -1,11 +1,13 @@
-package db
+package index_db
 
 import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v4"
-	m "github.com/johannessarpola/go-network-buffer/models"
+	_ "github.com/johannessarpola/go-network-buffer/pkg/logging"
+	m "github.com/johannessarpola/go-network-buffer/pkg/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
+	"github.com/sirupsen/logrus"
 )
 
 // TODO Could be just IndexStore -> Index with ID
@@ -33,15 +35,15 @@ func (store *IndexStore) init_index(idx *m.Index) {
 		if err == nil {
 			err = item.Value(func(val []byte) error {
 				n := u.ConvertToUint64(val)
-				logger.Infof("Value exists, setting %s from db to %d", idx.Name, n)
+				logrus.Infof("Value exists, setting %s from db to %d", idx.Name, n)
 				idx.SetValue(n)
 				return nil
 			})
 			if err != nil {
-				logger.Error("Could not set value", err)
+				logrus.Error("Could not set value", err)
 			}
 		} else {
-			logger.Infof("Value does not exist, setting %s to 0", idx.Name)
+			logrus.Infof("Value does not exist, setting %s to 0", idx.Name)
 		}
 
 		err = txn.Set(idx.AsBytes())
@@ -50,7 +52,7 @@ func (store *IndexStore) init_index(idx *m.Index) {
 	})
 
 	if err != nil {
-		logger.Fatalf("Could not initialize index %s", idx.Name)
+		logrus.Fatalf("Could not initialize index %s", idx.Name)
 	}
 }
 
@@ -80,7 +82,7 @@ func (data *IndexStore) Increment() (*m.Index, error) {
 		return data.save()
 	})
 	if err != nil {
-		logger.Error("Error error")
+		logrus.Error("Error error")
 		panic(err) // TODO
 	}
 	return data.idx, nil
@@ -92,7 +94,7 @@ func (data *IndexStore) Get() (*m.Index, error) {
 		item, err := txn.Get(data.idx.KeyAsBytes())
 
 		if err != nil {
-			logger.Info("Index not found", err)
+			logrus.Info("Index not found", err)
 		}
 
 		return item.Value(func(val []byte) error {

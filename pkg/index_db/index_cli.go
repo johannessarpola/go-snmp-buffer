@@ -1,10 +1,10 @@
-package db
+package index_db
 
 import (
 	"errors"
 
 	"github.com/dgraph-io/badger/v4"
-	m "github.com/johannessarpola/go-network-buffer/models"
+	m "github.com/johannessarpola/go-network-buffer/pkg/models"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 )
 
@@ -67,11 +67,11 @@ func CreateIndex(db *badger.DB, key []byte) error {
 	})
 }
 
-func SetIndexUint(db *badger.DB, key []byte, value uint64) error {
-	return SetIndex(db, key, u.ConvertToByteArr(value))
+func SetIndex(db *badger.DB, key []byte, value uint64) error {
+	return set_idx(db, key, u.ConvertToByteArr(value))
 }
 
-func SetIndex(db *badger.DB, key []byte, value []byte) error {
+func set_idx(db *badger.DB, key []byte, value []byte) error {
 	return db.Update(func(txn *badger.Txn) error {
 		i, err := txn.Get(key)
 		// Set should not create new index

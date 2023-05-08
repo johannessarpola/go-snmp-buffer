@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/johannessarpola/go-network-buffer/db"
+	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
+	db "github.com/johannessarpola/go-network-buffer/pkg/index_db"
 	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +20,7 @@ var listCmd = &cobra.Command{
 		fmt.Println("Indexes in database: ")
 		path := utils.GetDataFromFlagOrConf(cmd)
 		fmt.Printf("Listing indexes in database: %s\n", path)
-		db.WithDatabase(path, cli_list_idx)
+		c.WithDatabase(path, cli_list_idx)
 	},
 }
 

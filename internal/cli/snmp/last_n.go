@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/johannessarpola/go-network-buffer/db"
-	m "github.com/johannessarpola/go-network-buffer/models"
+	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
+	m "github.com/johannessarpola/go-network-buffer/pkg/models"
+	db "github.com/johannessarpola/go-network-buffer/pkg/snmp_db"
 	u "github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,7 +40,7 @@ func init() {
 func last_n(path string, n int) {
 	arr := make([]m.StoredPacket, n)
 
-	db.WithDatabase(path, func(d *badger.DB) error {
+	c.WithDatabase(path, func(d *badger.DB) error {
 		return db.LastN(d, arr)
 	})
 

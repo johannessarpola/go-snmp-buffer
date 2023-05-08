@@ -1,9 +1,11 @@
-package db
+package snmp_db
 
 import (
 	"github.com/dgraph-io/badger/v4"
-	m "github.com/johannessarpola/go-network-buffer/models"
-	s "github.com/johannessarpola/go-network-buffer/serdes"
+	_ "github.com/johannessarpola/go-network-buffer/pkg/logging"
+	m "github.com/johannessarpola/go-network-buffer/pkg/models"
+	s "github.com/johannessarpola/go-network-buffer/pkg/serdes"
+	"github.com/sirupsen/logrus"
 )
 
 func LastN(db *badger.DB, dst []m.StoredPacket) error {
@@ -21,7 +23,7 @@ func LastN(db *badger.DB, dst []m.StoredPacket) error {
 		for it.Rewind(); it.Valid() && i < n; it.Next() {
 			item := it.Item()
 			k := item.Key()
-			logger.Debugf("Listing trap with id %s", string(k))
+			logrus.Debugf("Listing trap with id %s", string(k))
 			_ = item.Value(func(val []byte) error {
 				decoded, err := s.Decode(val)
 

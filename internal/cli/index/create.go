@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/johannessarpola/go-network-buffer/db"
+	c "github.com/johannessarpola/go-network-buffer/internal/cli/common"
+	db "github.com/johannessarpola/go-network-buffer/pkg/index_db"
 	"github.com/johannessarpola/go-network-buffer/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,7 +33,7 @@ func create_idx(path string, key string) {
 	if len(key) == 0 {
 		fmt.Println("Please provide a key for index")
 	} else {
-		err := db.WithDatabase(path, func(d *badger.DB) error {
+		err := c.WithDatabase(path, func(d *badger.DB) error {
 			fmt.Printf("Creating index %s\n", key)
 			err := db.CreateIndex(d, []byte(key))
 			if err != nil {

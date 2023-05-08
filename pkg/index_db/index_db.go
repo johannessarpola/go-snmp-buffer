@@ -1,13 +1,12 @@
-package db
+package index_db
 
 import (
 	"github.com/dgraph-io/badger/v4"
-	m "github.com/johannessarpola/go-network-buffer/models"
+	m "github.com/johannessarpola/go-network-buffer/pkg/models"
 )
 
 // TODO Use array
 type IndexDB struct {
-	db         *badger.DB
 	cidx_store *IndexStore // has sync.Mutex
 	oidx_store *IndexStore // has sync.Mutex
 }
@@ -17,7 +16,6 @@ func NewIndexDB(db *badger.DB) *IndexDB {
 	offset_idx_store := NewIndexStore("offset_idx", db)   // TODO Configurable
 
 	d := &IndexDB{
-		db:         db,
 		cidx_store: current_idx_store,
 		oidx_store: offset_idx_store,
 	}
@@ -53,4 +51,11 @@ func (data *IndexDB) IncrementCurrentIndex() (*m.Index, error) {
 
 func (data *IndexDB) IncrementOffsetIndex() (*m.Index, error) {
 	return data.oidx_store.Increment()
+}
+
+func (data *IndexDB) SetCurrentIndex(newval uint64) error {
+	return data.cidx_store.Set(newval)
+}
+func (data *IndexDB) SetOffsetIndex(newval uint64) error {
+	return data.oidx_store.Set(newval)
 }
