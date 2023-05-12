@@ -7,7 +7,7 @@ import (
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
 )
 
-func Decode(arr []byte) (models.Packet, error) {
+func DecodeGob(arr []byte) (models.Packet, error) {
 	var p models.Packet
 	buf := bytes.NewBuffer(arr)
 	decoder := gob.NewDecoder(buf)
@@ -15,7 +15,7 @@ func Decode(arr []byte) (models.Packet, error) {
 	return p, err
 }
 
-func Encode(packet *models.Packet) ([]byte, error) {
+func EncodeGob(packet *models.Packet) ([]byte, error) {
 	var buf bytes.Buffer // Stand-in
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(packet)

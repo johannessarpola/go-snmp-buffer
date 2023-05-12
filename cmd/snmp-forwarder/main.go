@@ -18,7 +18,7 @@ import (
 //var logger = logrus.New()
 
 func process_element(in *models.Element, print bool) {
-	decoded, err := serdes.Decode(in.Value)
+	decoded, err := serdes.DecodeGob(in.Value)
 	if err != nil {
 		log.Println("could not decode!!")
 	}
