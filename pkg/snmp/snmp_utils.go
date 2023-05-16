@@ -18,10 +18,11 @@ type Priv struct {
 	Pass     string               `json:"pass"`
 }
 type V3Config struct {
-	Auth     Auth   `json:"auth"`
-	Priv     Priv   `json:"priv"`
-	Engineid string `json:"engineid"`
-	Username string `json:"username"`
+	Protocol SnmpProtocol `json:"protocol"`
+	Auth     Auth         `json:"auth"`
+	Priv     Priv         `json:"priv"`
+	Engineid string       `json:"engineid"`
+	Username string       `json:"username"`
 }
 
 func (a *Auth) UnmarshalJSON(data []byte) error {
