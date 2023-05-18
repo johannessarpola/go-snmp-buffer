@@ -3,6 +3,7 @@ package serdes
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
 )
@@ -20,4 +21,15 @@ func EncodeGob(packet *models.Packet) ([]byte, error) {
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(packet)
 	return buf.Bytes(), err
+}
+
+func DecodeJson(arr []byte) (models.Packet, error) {
+	var p models.Packet
+	err := json.Unmarshal(arr, &p)
+	return p, err
+}
+
+func EncodeJson(packet *models.Packet) ([]byte, error) {
+	b, err := json.Marshal(packet)
+	return b, err
 }
