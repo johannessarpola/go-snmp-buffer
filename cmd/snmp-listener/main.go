@@ -25,17 +25,17 @@ import (
 //	}
 
 func main() {
-	var log = logrus.New()
+	logrus.SetLevel(logrus.ErrorLevel)
 
 	port := 9999
-	log.Infof("Starting snmp listener at port %d", port)
+	logrus.Infof("Starting snmp listener at port %d", port)
 	idx_fs, err := bu.NewFileStore("../../_idxs")
 	if err != nil {
-		log.Fatalf("could not open index filestore")
+		logrus.Fatalf("could not open index filestore")
 	}
 	snmp_fs, err := bu.NewFileStore("../../_snmp")
 	if err != nil {
-		log.Fatalf("could not open snmp filestore")
+		logrus.Fatalf("could not open snmp filestore")
 	}
 
 	defer idx_fs.Close()  // TODO Handle these more cleanly

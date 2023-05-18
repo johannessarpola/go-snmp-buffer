@@ -20,7 +20,7 @@ func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {
 		panic(err) // TODO
 	}
 	p := models.NewPacket(trap)
-	b, err := serdes.EncodeGob(&p)
+	b, err := serdes.EncodeJson(&p)
 	if err != nil {
 		logrus.Info("Encoding failed!!")
 		return err

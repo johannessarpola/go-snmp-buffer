@@ -25,7 +25,7 @@ func LastN(db *badger.DB, dst []m.StoredPacket) error {
 			k := item.Key()
 			logrus.Debugf("Listing trap with id %s", string(k))
 			_ = item.Value(func(val []byte) error {
-				decoded, err := s.DecodeGob(val)
+				decoded, err := s.DecodeJson(val)
 
 				if err == nil {
 					dst[i] = m.StoredPacket{

@@ -17,16 +17,10 @@ func TestJson(t *testing.T) {
 		Value: ".1.3.6.1.6.3.1.1.5.1",
 	}
 
-	pb, _ := g.Default.SnmpEncodePacket(
-		g.Trap,
-		[]g.SnmpPDU{pdu},
-		0,
-		0,
-	)
-
-	p, _ := g.Default.SnmpDecodePacket(pb)
-
-	pckt := models.NewPacket(p)
+	pckt := models.Packet{}
+	pckt.Variables = []g.SnmpPDU{pdu}
+	pckt.Version = g.Version2c
+	pckt.ContextEngineID = "abc"
 
 	js, _ := EncodeJson(&pckt)
 	dpckt, _ := DecodeJson(js)
@@ -45,16 +39,10 @@ func TestGob(t *testing.T) {
 		Value: ".1.3.6.1.6.3.1.1.5.1",
 	}
 
-	pb, _ := g.Default.SnmpEncodePacket(
-		g.Trap,
-		[]g.SnmpPDU{pdu},
-		0,
-		0,
-	)
-
-	p, _ := g.Default.SnmpDecodePacket(pb)
-
-	pckt := models.NewPacket(p)
+	pckt := models.Packet{}
+	pckt.Variables = []g.SnmpPDU{pdu}
+	pckt.Version = g.Version2c
+	pckt.ContextEngineID = "abc"
 
 	js, _ := EncodeGob(&pckt)
 	dpckt, _ := DecodeGob(js)

@@ -12,13 +12,14 @@ import (
 	"github.com/johannessarpola/go-network-buffer/pkg/serdes"
 	sdb "github.com/johannessarpola/go-network-buffer/pkg/snmpdb"
 	"github.com/panjf2000/ants/v2"
+	"github.com/sirupsen/logrus"
 	//"github.com/sirupsen/logrus"
 )
 
 //var logger = logrus.New()
 
 func process_element(in *models.Element, print bool) {
-	decoded, err := serdes.DecodeGob(in.Value)
+	decoded, err := serdes.DecodeJson(in.Value)
 	if err != nil {
 		log.Println("could not decode!!")
 	}
@@ -35,7 +36,7 @@ func process_element(in *models.Element, print bool) {
 
 func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
-
+	logrus.SetLevel(logrus.WarnLevel)
 	idx_fs, err := bu.NewFileStore("../../_idxs")
 	if err != nil {
 		log.Fatal("could not open index filestore")
