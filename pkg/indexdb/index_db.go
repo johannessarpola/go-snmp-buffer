@@ -1,6 +1,8 @@
 package indexdb
 
 import (
+	"fmt"
+
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/pkg/models"
 	"github.com/sirupsen/logrus"
@@ -17,13 +19,13 @@ func NewIndexDB(db *badger.DB) (*IndexDB, error) {
 	cidx := "current_idx"
 	current_idx_store, err := NewIndexStore(cidx, db) // TODO Configurable
 	if err != nil {
-		logrus.Errorf("could not initialize %s store", cidx, err)
+		logrus.Errorf(fmt.Sprintf("could not initialize %s store", cidx), err)
 		return nil, err
 	}
 	oidx := "offset_idx"
 	offset_idx_store, err := NewIndexStore(oidx, db) // TODO Configurable
 	if err != nil {
-		logrus.Errorf("could not initialize %s store", oidx, err)
+		logrus.Error(fmt.Sprintf("could not initialize %s store", oidx), err)
 		return nil, err
 	}
 	d := &IndexDB{

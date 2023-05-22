@@ -142,12 +142,12 @@ func (data *ringDB) Close() {
 func OpenDatabases(snmp_folder string, snmp_prefix string, idx_folder string) (*SnmpDB, error) {
 	idx_fs, err := bu.NewFileStore(idx_folder)
 	if err != nil {
-		logrus.Errorf("could not open index filestore", err)
+		logrus.Error("could not open index filestore", err)
 		return nil, err
 	}
 	snmp_fs, err := bu.NewFileStore(snmp_folder)
 	if err != nil {
-		logrus.Errorf("could not open snmp filestore", err)
+		logrus.Error("could not open snmp filestore", err)
 		return nil, err
 	}
 
