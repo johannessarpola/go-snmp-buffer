@@ -5,8 +5,6 @@ import (
 	"log"
 
 	cu "github.com/johannessarpola/go-network-buffer/internal/cli/utils"
-	bu "github.com/johannessarpola/go-network-buffer/pkg/badgerutils"
-	idb "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
 	m "github.com/johannessarpola/go-network-buffer/pkg/metrics"
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
 	"github.com/johannessarpola/go-network-buffer/pkg/serdes"
@@ -37,20 +35,15 @@ func process_element(in *models.Element, print bool) {
 func main() {
 	// TODO Read SNMP from disk -> send forward with some adapter(?)
 	logrus.SetLevel(logrus.WarnLevel)
-	idx_fs, err := bu.NewFileStore("../../_idxs")
-	if err != nil {
-		log.Fatal("could not open index filestore")
-	}
-	snmp_fs, err := bu.NewFileStore("../../_snmp")
-	if err != nil {
-		log.Fatal("could not open snmp filestore")
-	}
+	idx_fn := "../../_idxs"
+	snmp_fn := "../../_snmp"
+	snmp_pfx := "snmp_"
 
-	defer idx_fs.Close()
-	defer snmp_fs.Close()
-
-	idx_db := idb.NewIndexDB(idx_fs)                     // TODO prefix?
-	snmp_data := sdb.NewSnmpDB(snmp_fs, idx_db, "snmp_") // TODO Configurable prefix
+	snmp_data, err := sdb.OpenDatabases(snmp_fn, snmp_pfx, idx_fn)
+	if err != nil {
+		logrus.Fatalf("Could not open databases", err)
+	}
+	defer snmp_data.Close()
 
 	defer ants.Release()
 	pool, err := ants.NewPool(100)

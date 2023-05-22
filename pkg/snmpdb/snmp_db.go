@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/dgraph-io/badger/v4"
+	bu "github.com/johannessarpola/go-network-buffer/pkg/badgerutils"
 	c "github.com/johannessarpola/go-network-buffer/pkg/conversions"
 	i "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
-	_ "github.com/johannessarpola/go-network-buffer/pkg/logging"
 	"github.com/johannessarpola/go-network-buffer/pkg/models"
 	"github.com/sirupsen/logrus"
 )
@@ -134,9 +134,30 @@ func (data *ringDB) Values() []*models.Element {
 
 type SnmpDB = ringDB
 
-func NewSnmpDB(fs *badger.DB, idx_db *i.IndexDB, prefix string) *SnmpDB {
-	rdb := NewRingDB(fs, idx_db, prefix)
-	return rdb
+func (data *ringDB) Close() {
+	data.db.Close()
+	data.IndexDB.Close()
+}
+
+func OpenDatabases(snmp_folder string, snmp_prefix string, idx_folder string) (*SnmpDB, error) {
+	idx_fs, err := bu.NewFileStore(idx_folder)
+	if err != nil {
+		logrus.Errorf("could not open index filestore", err)
+		return nil, err
+	}
+	snmp_fs, err := bu.NewFileStore(snmp_folder)
+	if err != nil {
+		logrus.Errorf("could not open snmp filestore", err)
+		return nil, err
+	}
+
+	idx_db, err := i.NewIndexDB(idx_fs)
+	if err != nil {
+		return nil, err
+	}
+
+	snmp_data := NewRingDB(snmp_fs, idx_db, snmp_prefix)
+	return snmp_data, nil
 }
 
 // // TODO Add batch support so it is offset + n

@@ -3,24 +3,40 @@ package indexdb
 import (
 	"github.com/dgraph-io/badger/v4"
 	m "github.com/johannessarpola/go-network-buffer/pkg/models"
+	"github.com/sirupsen/logrus"
 )
 
 // TODO Use array
 type IndexDB struct {
 	cidx_store *IndexStore // has sync.Mutex
 	oidx_store *IndexStore // has sync.Mutex
+	common_db  *badger.DB
 }
 
-func NewIndexDB(db *badger.DB) *IndexDB {
-	current_idx_store := NewIndexStore("current_idx", db) // TODO Configurable
-	offset_idx_store := NewIndexStore("offset_idx", db)   // TODO Configurable
-
+func NewIndexDB(db *badger.DB) (*IndexDB, error) {
+	cidx := "current_idx"
+	current_idx_store, err := NewIndexStore(cidx, db) // TODO Configurable
+	if err != nil {
+		logrus.Errorf("could not initialize %s store", cidx, err)
+		return nil, err
+	}
+	oidx := "offset_idx"
+	offset_idx_store, err := NewIndexStore(oidx, db) // TODO Configurable
+	if err != nil {
+		logrus.Errorf("could not initialize %s store", oidx, err)
+		return nil, err
+	}
 	d := &IndexDB{
 		cidx_store: current_idx_store,
 		oidx_store: offset_idx_store,
+		common_db:  db,
 	}
 
-	return d
+	return d, nil
+}
+
+func (i *IndexDB) Close() {
+	i.common_db.Close()
 }
 
 func get_and_increment(idx *IndexStore) (uint64, error) {

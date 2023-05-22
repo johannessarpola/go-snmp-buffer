@@ -17,18 +17,21 @@ type IndexStore struct {
 	idx *m.Index
 }
 
-func NewIndexStore(key string, db *badger.DB) *IndexStore {
+func NewIndexStore(key string, db *badger.DB) (*IndexStore, error) {
 	idx := m.ZeroIndex(key) // TODO More configurable
 
 	d := &IndexStore{
 		db:  db,
 		idx: &idx,
 	}
-	d.init_index(&idx)
-	return d
+	err := d.init_index(&idx)
+	if err != nil {
+		return nil, err
+	}
+	return d, nil
 }
 
-func (store *IndexStore) init_index(idx *m.Index) {
+func (store *IndexStore) init_index(idx *m.Index) error {
 	err := store.db.Update(func(txn *badger.Txn) error {
 		item, err := txn.Get(idx.KeyAsBytes())
 
@@ -41,6 +44,7 @@ func (store *IndexStore) init_index(idx *m.Index) {
 			})
 			if err != nil {
 				logrus.Error("Could not set value", err)
+				return err
 			}
 		} else {
 			logrus.Infof("Value does not exist, setting %s to 0", idx.Name)
@@ -50,10 +54,7 @@ func (store *IndexStore) init_index(idx *m.Index) {
 		return err
 
 	})
-
-	if err != nil {
-		logrus.Fatalf("Could not initialize index %s", idx.Name)
-	}
+	return err
 }
 
 func (data *IndexStore) GetNbr() (uint64, error) {
