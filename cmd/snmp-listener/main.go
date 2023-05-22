@@ -19,7 +19,7 @@ func main() {
 
 	defer snmp_data.Close()
 	if err != nil {
-		logrus.Fatalf("Could not open databases", err)
+		logrus.Fatal("Could not open databases", err)
 	}
 	s.Start(port, snmp_data)
 }

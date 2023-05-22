@@ -41,7 +41,7 @@ func main() {
 
 	snmp_data, err := sdb.OpenDatabases(snmp_fn, snmp_pfx, idx_fn)
 	if err != nil {
-		logrus.Fatalf("Could not open databases", err)
+		logrus.Fatal("Could not open databases", err)
 	}
 	defer snmp_data.Close()
 
