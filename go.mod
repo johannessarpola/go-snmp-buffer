@@ -1,6 +1,6 @@
 module github.com/johannessarpola/go-network-buffer
 
-go 1.19
+go 1.20
 
 require (
 	github.com/panjf2000/ants/v2 v2.7.4
