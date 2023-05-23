@@ -3,32 +3,51 @@ package listen
 import (
 	"fmt"
 
+	sdb "github.com/johannessarpola/go-network-buffer/pkg/snmpdb"
+
+	"github.com/johannessarpola/go-network-buffer/pkg/snmp"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var listenCmd = &cobra.Command{
+var ListenCmd = &cobra.Command{
 	Use:     "listen",
 	Aliases: []string{"l"},
 	Short:   "commands related to indexes",
-	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("runnista")
+		port := viper.GetInt("listen.port")
+		host := viper.GetString("listen.host")
 
+		f_snmp := viper.GetString("listen.data.snmp")
+		p_snmp := viper.GetString("listen.data.snmp.prefix")
+		f_idxs := viper.GetString("listen.data.index")
+		fmt.Printf("Using SNMP databse on folder %s\n", f_snmp)
+		fmt.Printf("Using Index databse on folder %s\n", f_idxs)
+
+		snmp_data, err := sdb.OpenDatabases(f_snmp, p_snmp, f_idxs)
+		if err != nil {
+			logrus.Fatal("Could not open databases", err)
+		}
+		defer snmp_data.Close()
+		snmp.ListenSnmp(port, host, snmp_data)
 	},
 }
 
 func init() {
 
-	listenCmd.PersistentFlags().Int("port", 10161, "port to listen to")
-	viper.BindPFlag("listen.port", listenCmd.PersistentFlags().Lookup("port"))
+	ListenCmd.PersistentFlags().Int("port", 10161, "port to listen to")
+	viper.BindPFlag("listen.port", ListenCmd.PersistentFlags().Lookup("port"))
 
-	listenCmd.PersistentFlags().String("host", "0.0.0.0", "host to listen")
-	viper.BindPFlag("listen.host", listenCmd.PersistentFlags().Lookup("port"))
+	ListenCmd.PersistentFlags().String("host", "0.0.0.0", "host to listen")
+	viper.BindPFlag("listen.host", ListenCmd.PersistentFlags().Lookup("port"))
 
-	listenCmd.PersistentFlags().String("data.snmp", "_snmp", "folder to use for snmp data")
-	viper.BindPFlag("listen.data.snmp", listenCmd.PersistentFlags().Lookup("data.snmp"))
+	ListenCmd.PersistentFlags().String("data.snmp", "_snmp", "folder to use for snmp data")
+	viper.BindPFlag("listen.data.snmp", ListenCmd.PersistentFlags().Lookup("data.snmp"))
 
-	listenCmd.PersistentFlags().String("data.index", "_idxs", "folder to use for snmp data")
-	viper.BindPFlag("listen.data.index", listenCmd.PersistentFlags().Lookup("data.index"))
+	ListenCmd.PersistentFlags().String("data.snmp.prefix", "snmp_", "folder to use for snmp data")
+	viper.BindPFlag("listen.data.snmp.prefix", ListenCmd.PersistentFlags().Lookup("data.snmp.prefix"))
+
+	ListenCmd.PersistentFlags().String("data.index", "_idxs", "folder to use for snmp data")
+	viper.BindPFlag("listen.data.index", ListenCmd.PersistentFlags().Lookup("data.index"))
 }

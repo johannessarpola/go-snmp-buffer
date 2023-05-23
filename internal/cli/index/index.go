@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+var dataIndexKey = "admincli.data.index"
 var IndexCmd = &cobra.Command{
 	Use:     "index",
 	Aliases: []string{"idxs"},
@@ -18,8 +19,8 @@ var IndexCmd = &cobra.Command{
 
 func init() {
 
-	IndexCmd.PersistentFlags().StringP("data", "d", "", "folder of database")
-	viper.BindPFlag("data", IndexCmd.PersistentFlags().Lookup("data"))
+	getCmd.PersistentFlags().String("data.index", "_idxs", "folder to use for snmp data")
+	viper.BindPFlag(dataIndexKey, getCmd.PersistentFlags().Lookup("data.index"))
 
 	IndexCmd.AddCommand(getCmd)
 	IndexCmd.AddCommand(setCmd)

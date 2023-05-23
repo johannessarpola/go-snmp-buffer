@@ -8,6 +8,7 @@ import (
 	u "github.com/johannessarpola/go-network-buffer/internal/cli/utils"
 	db "github.com/johannessarpola/go-network-buffer/pkg/indexdb"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var listCmd = &cobra.Command{
@@ -17,7 +18,7 @@ var listCmd = &cobra.Command{
 	//Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Indexes in database: ")
-		path := u.GetDataFromFlagOrConf(cmd)
+		path := viper.GetString(dataIndexKey)
 		fmt.Printf("Listing indexes in database: %s\n", path)
 		u.WithDatabase(path, cli_list_idx)
 	},

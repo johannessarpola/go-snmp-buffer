@@ -1,4 +1,4 @@
-package cli
+package admin
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var rootCmd = &cobra.Command{
+var adminRootCmd = &cobra.Command{
 	Use:   "admin",
 	Short: "admin - CLI to view the database",
 	Long: `description
@@ -37,12 +37,12 @@ func init() {
 		fmt.Println(viper.AllSettings())
 	}
 
-	rootCmd.AddCommand(i.IndexCmd)
-	rootCmd.AddCommand(s.SnmpCmd)
+	adminRootCmd.AddCommand(i.IndexCmd)
+	adminRootCmd.AddCommand(s.SnmpCmd)
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := adminRootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "There was an error while executing your CLI '%s'", err)
 		os.Exit(1)
 	}

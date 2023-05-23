@@ -17,7 +17,7 @@ var createCmd = &cobra.Command{
 	Short:   "creates index",
 	Run: func(cmd *cobra.Command, args []string) {
 		index := u.GetFlagOrConfString(cmd, "index")
-		path := u.GetDataFromFlagOrConf(cmd)
+		path := viper.GetString(dataIndexKey)
 		fmt.Printf("Sets index in database: %s\n", path)
 		create_idx(path, index)
 	},

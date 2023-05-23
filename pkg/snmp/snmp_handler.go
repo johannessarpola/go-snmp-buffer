@@ -8,10 +8,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type Mapper interface {
+	Handle(pckt []byte) error
+}
+
 type SnmpHandler struct {
 	// TODO Add support for v3 at some point
 	gosnmp *g.GoSNMP
 	out    chan<- models.Element // TODO add some serious tool for this
+}
+
+func (s *SnmpHandler) Handle(pckt []byte) error {
+	return s.HandlePacket(pckt)
 }
 
 func (snmp *SnmpHandler) HandlePacket(pckt []byte) error {

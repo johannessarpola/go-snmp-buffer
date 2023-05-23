@@ -6,10 +6,12 @@
     "configurations": [
         {
             "name": "Launch Listener",
+            "cwd": "${workspaceFolder}",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/snmp-listener/main.go"
+            "program": "${workspaceFolder}/cmd/appcli/main.go",
+            "args": ["listen"]
         },
         {
             "name": "Launch Producer",
@@ -27,33 +29,37 @@
         },
         {
             "name": "Launch Admin CLI",
+            "cwd": "${workspaceFolder}",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/main.go"
+            "program": "${workspaceFolder}/cmd/admincli/main.go"
         },
         {
             "name": "Launch Admin CLI [list indexes]",
+            "cwd": "${workspaceFolder}",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/main.go",
+            "program": "${workspaceFolder}/cmd/admincli/main.go",
             "args": ["index", "list"]
         },
         {
             "name": "Launch Admin CLI [get index]",
+            "cwd": "${workspaceFolder}",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/main.go",
-            "args": ["index", "g"]
+            "program": "${workspaceFolder}/cmd/admincli/main.go",
+            "args": ["index", "g", "-i", "current_idx"]
         },
         {
             "name": "Launch Admin CLI [get offset_idx]",
+            "cwd": "${workspaceFolder}",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/main.go",
+            "program": "${workspaceFolder}/cmd/admincli/main.go",
             "args": ["index", "g", "-i", "offset_idx"]
         }
     ]

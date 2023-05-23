@@ -19,13 +19,14 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("--- get index from database")
 		index := u.GetFlagOrConfString(cmd, "index")
-		path := u.GetDataFromFlagOrConf(cmd)
+		path := viper.GetString(dataIndexKey)
 		fmt.Printf("Gets index from database: %s\n", path)
 		get_idx(path, index)
 	},
 }
 
 func init() {
+
 	getCmd.PersistentFlags().StringP("index", "i", viper.GetString("index"), "index to get")
 	viper.BindPFlag("index", deleteCmd.PersistentFlags().Lookup("index"))
 }

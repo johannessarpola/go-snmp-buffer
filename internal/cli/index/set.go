@@ -20,7 +20,7 @@ var setCmd = &cobra.Command{
 		fmt.Println("--- get index from database")
 		index := u.GetFlagOrConfString(cmd, "index")
 		val := u.GetFlagOrConfUint(cmd, "value")
-		path := u.GetDataFromFlagOrConf(cmd)
+		path := viper.GetString(dataIndexKey)
 		fmt.Printf("Sets index in database: %s\n", path)
 		set_idx(path, index, val)
 	},
