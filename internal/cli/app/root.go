@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/johannessarpola/go-network-buffer/internal/cli/listen"
+	"github.com/johannessarpola/go-network-buffer/internal/cli/producer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -28,6 +29,7 @@ func init() {
 	}
 
 	appRootCmd.AddCommand(listen.ListenCmd)
+	appRootCmd.AddCommand(producer.ProducerCmd)
 }
 
 func Execute() {
