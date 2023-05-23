@@ -22,9 +22,9 @@ var ProducerCmd = &cobra.Command{
 
 func init() {
 
-	ListenCmd.PersistentFlags().Int("target.port", 10161, "port to listen to")
-	viper.BindPFlag("producer.target.port", ListenCmd.PersistentFlags().Lookup("target.por"))
+	ProducerCmd.PersistentFlags().Int("target.port", 10161, "port to listen to")
+	viper.BindPFlag("producer.target.port", ProducerCmd.PersistentFlags().Lookup("target.por"))
 
-	ListenCmd.PersistentFlags().String("target.host", "127.0.0.1", "host to listen")
-	viper.BindPFlag("producer.target.host", ListenCmd.PersistentFlags().Lookup("target.host"))
+	ProducerCmd.PersistentFlags().String("target.host", "127.0.0.1", "host to listen")
+	viper.BindPFlag("producer.target.host", ProducerCmd.PersistentFlags().Lookup("target.host"))
 }
