@@ -3,7 +3,7 @@ module github.com/johannessarpola/go-network-buffer
 go 1.20
 
 require (
-	github.com/panjf2000/ants/v2 v2.7.4
+	github.com/panjf2000/ants/v2 v2.7.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.15.0
 )
