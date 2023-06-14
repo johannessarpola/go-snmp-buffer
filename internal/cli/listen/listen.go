@@ -19,9 +19,9 @@ var ListenCmd = &cobra.Command{
 		port := viper.GetInt("listen.port")
 		host := viper.GetString("listen.host")
 
-		f_snmp := viper.GetString("listen.data.snmp")
+		f_snmp := viper.GetString("listen.data.snmp.folder")
 		p_snmp := viper.GetString("listen.data.snmp.prefix")
-		f_idxs := viper.GetString("listen.data.index")
+		f_idxs := viper.GetString("listen.data.index.folder")
 		fmt.Printf("Using SNMP databse on folder %s\n", f_snmp)
 		fmt.Printf("Using Index databse on folder %s\n", f_idxs)
 
@@ -30,6 +30,7 @@ var ListenCmd = &cobra.Command{
 			logrus.Fatal("Could not open databases", err)
 		}
 		defer snmp_data.Close()
+		fmt.Printf("Listening to %s:%d\n", host, port)
 		snmp.ListenSnmp(port, host, snmp_data)
 	},
 }
@@ -42,12 +43,12 @@ func init() {
 	ListenCmd.PersistentFlags().String("host", "0.0.0.0", "host to listen")
 	viper.BindPFlag("listen.host", ListenCmd.PersistentFlags().Lookup("port"))
 
-	ListenCmd.PersistentFlags().String("data.snmp", "_snmp", "folder to use for snmp data")
-	viper.BindPFlag("listen.data.snmp", ListenCmd.PersistentFlags().Lookup("data.snmp"))
+	ListenCmd.PersistentFlags().String("data.snmp.folder", "_snmp", "folder to use for snmp data")
+	viper.BindPFlag("listen.data.snmp.folder", ListenCmd.PersistentFlags().Lookup("data.snmp.folder"))
 
 	ListenCmd.PersistentFlags().String("data.snmp.prefix", "snmp_", "folder to use for snmp data")
 	viper.BindPFlag("listen.data.snmp.prefix", ListenCmd.PersistentFlags().Lookup("data.snmp.prefix"))
 
-	ListenCmd.PersistentFlags().String("data.index", "_idxs", "folder to use for snmp data")
-	viper.BindPFlag("listen.data.index", ListenCmd.PersistentFlags().Lookup("data.index"))
+	ListenCmd.PersistentFlags().String("data.index.folder", "_idxs", "folder to use for snmp data")
+	viper.BindPFlag("listen.data.index.folder", ListenCmd.PersistentFlags().Lookup("data.index.folder"))
 }
