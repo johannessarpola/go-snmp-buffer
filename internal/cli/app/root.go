@@ -6,6 +6,7 @@ import (
 
 	"github.com/johannessarpola/go-network-buffer/internal/cli/listen"
 	"github.com/johannessarpola/go-network-buffer/internal/cli/producer"
+	"github.com/johannessarpola/go-network-buffer/internal/cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -17,16 +18,13 @@ var appRootCmd = &cobra.Command{
 }
 
 func init() {
-	viper.SetConfigName("app-config") // name of config file (without extension)
-	viper.SetConfigType("yaml")       // type of config file
-	viper.AddConfigPath(".")          // path to look for the config file in the working directory
 
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Using default values")
-	} else {
-		fmt.Printf("Using config file of: %s\n", viper.GetViper().ConfigFileUsed())
-		fmt.Println(viper.AllSettings())
-	}
+	cobra.OnInitialize(func() {
+		utils.InitConfig(appRootCmd.Use, ".app", appRootCmd.Commands)
+	})
+	appRootCmd.PersistentFlags().String("configs", "",
+		`Path for config`)
+	viper.BindPFlag("configs", appRootCmd.PersistentFlags().Lookup("configs"))
 
 	appRootCmd.AddCommand(listen.ListenCmd)
 	appRootCmd.AddCommand(producer.ProducerCmd)
