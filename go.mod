@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/panjf2000/ants/v2 v2.8.2
+	github.com/panjf2000/ants/v2 v2.9.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.17.0
 )
