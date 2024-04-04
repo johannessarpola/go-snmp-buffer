@@ -44,7 +44,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v23.5.9+incompatible // indirect
-	github.com/gosnmp/gosnmp v1.36.1
+	github.com/gosnmp/gosnmp v1.37.0
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/cobra v1.8.0
